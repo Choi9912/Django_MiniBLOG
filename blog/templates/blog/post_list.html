@@ -1,18 +1,16 @@
-<!-- templates/blog/post_list.html -->
 {% extends 'blog/base.html' %}
 
+{% block title %}Blog Posts{% endblock %}
+
 {% block content %}
-    <h1 class="mb-4">최근 게시물</h1>
+    <h2>Blog Posts</h2>
     {% for post in posts %}
-        <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">{{ post.title }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ post.author }} | {{ post.created_at|date:"Y-m-d H:i" }}</h6>
-                <p class="card-text">{{ post.content|truncatewords:30 }}</p>
-                <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary">자세히 보기</a>
-            </div>
-        </div>
+        <article>
+            <h3><a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a></h3>
+            <p>작성자: {{ post.author }} | 작성일: {{ post.created_at|date:"Y-m-d" }}</p>
+            <p>{{ post.content|truncatewords:30 }}</p>
+        </article>
     {% empty %}
-        <p>게시물이 없습니다.</p>
+        <p>아직 게시된 글이 없습니다.</p>
     {% endfor %}
 {% endblock %}

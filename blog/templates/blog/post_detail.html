@@ -1,0 +1,13 @@
+{% extends 'blog/base.html' %} {% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<article>
+  <h2>{{ post.title }}</h2>
+  <p>
+    작성자: {{ post.author }} | 작성일: {{ post.created_at|date:"Y-m-d H:i" }}
+  </p>
+  <div>{{ post.content|linebreaks }}</div>
+</article>
+{% if user == post.author %}
+<a href="{% url 'post_update' post.pk %}">수정</a>
+<a href="{% url 'post_delete' post.pk %}">삭제</a>
+{% endif %} {% endblock %}
