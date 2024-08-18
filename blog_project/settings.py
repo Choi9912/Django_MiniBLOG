@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
+    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -82,13 +83,13 @@ SITE_ID = 1
 # Allauth 설정
 LOGIN_REDIRECT_URL = '/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
-ACCOUNT_LOGOUT_ON_GET = True
-SOCIALACCOUNT_EMAIL_REQUIRED = False
-ACCOUNT_USERNAME_REQUIRED = False       # Defaults to True
-ACCOUNT_EMAIL_REQUIRED = False           # Defaults to False
-SOCIALACCOUNT_QUERY_EMAIL = ACCOUNT_EMAIL_REQUIRED
-SOCIALACCOUNT_AUTO_SIGNUP = False
-SOCIALACCOUNT_EMAIL_REQUIRED = False
+# 중간 확인 페이지 건너뛰기 설정
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
+# 이메일 인증 건너뛰기 설정 (선택사항)
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
 # 이메일 설정 (개발 환경에서는 콘솔에 출력)
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

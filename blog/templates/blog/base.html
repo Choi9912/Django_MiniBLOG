@@ -33,17 +33,29 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
             padding: 20px;
         }
-        button {
-            background-color: #fee500;
-            color: #000000;
+        .btn-kakao {
+        background-color: #ffd43b;
+        color: #000000;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        }
+        .btn-kakao:hover {
+            background-color: #ffcd00;
+        }
+        .btn-naver {
+            background-color: #1ec800;
+            color: #ffffff;
             border: none;
             padding: 10px 15px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-        button:hover {
-            background-color: #ffd43b;
+        .btn-naver:hover {
+            background-color: #17a500;
         }
     </style>
 </head>
@@ -57,17 +69,8 @@
                 <a class="nav-item nav-link" href="{% url 'account_logout' %}">로그아웃</a>
                 {% else %}
                 {% load socialaccount %}
-                {% providers_media_js %}
-                <form action="{% provider_login_url 'kakao' %}" method="post" class="d-inline-block mr-2">
-                    {% csrf_token %}
-                    <button type="submit">Kakao Login</button>
-                </form>
-                <form action="{% provider_login_url 'naver' %}" method="post" class="d-inline-block mr-2">
-                  {% csrf_token %}
-                  <button type="submit">Naver Login</button>
-              </form>
-                <a class="nav-item nav-link" href="{% url 'account_login' %}">로그인</a>
-                <a class="nav-item nav-link" href="{% url 'account_signup' %}">회원가입</a>
+                <a class="nav-item nav-link d-inline-block" href="{% url 'account_login' %}">로그인</a>
+                <a class="nav-item nav-link d-inline-block" href="{% url 'account_signup' %}">회원가입</a>
                 {% endif %}
             </div>
         </div>

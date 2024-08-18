@@ -3,6 +3,14 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .models import Post
+from allauth.account.views import LoginView
+from django.urls import reverse
+
+class CustomLoginView(LoginView):
+    template_name = 'blog/login.html'  # 이것이 귀하의 커스텀 로그인 템플릿 경로입니다.
+
+    def get_success_url(self):
+        return reverse('post_list')  # 로그인 성공 후 이동할 URL
 
 class PostListView(ListView):
     model = Post

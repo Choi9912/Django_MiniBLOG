@@ -1,0 +1,74 @@
+{% extends "blog/base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block head_title %}{% trans "로그인" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-white text-center py-3">
+          <h2 class="mb-0">로그인</h2>
+        </div>
+        <div class="card-body">
+          <form class="login" method="POST" action="{% url 'account_login' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <input type="text" name="login" class="form-control" placeholder="아이디" required>
+            </div>
+            <div class="mb-3">
+              <div class="input-group">
+                <input type="password" name="password" class="form-control" placeholder="비밀번호" required>
+                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="remember">
+                <label class="form-check-label" for="remember">아이디 저장</label>
+              </div>
+              <a href="{% url 'account_reset_password' %}" class="text-decoration-none">아이디/비밀번호 찾기</a>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mb-3">로그인</button>
+          </form>
+          <a href="{% url 'account_signup' %}" class="btn btn-outline-secondary w-100 mb-3">회원가입</a>
+          {% get_providers as socialaccount_providers %}
+          {% if socialaccount_providers %}
+            <a href="{% provider_login_url 'naver' %}" class="btn btn-success w-100 mb-2">
+              <i class="bi bi-person-fill"></i> 네이버 로그인
+            </a>
+            <a href="{% provider_login_url 'kakao' %}" class="btn btn-warning w-100">
+              <i class="bi bi-chat-fill"></i> 카카오 로그인
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn-success { background-color: #03C75A; border-color: #03C75A; }
+  .btn-warning { background-color: #FEE500; border-color: #FEE500; color: #000; }
+</style>
+
+<script>
+document.getElementById('togglePassword').addEventListener('click', function() {
+  const passwordInput = document.querySelector('input[name="password"]');
+  const icon = this.querySelector('i');
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    icon.classList.remove('bi-eye');
+    icon.classList.add('bi-eye-slash');
+  } else {
+    passwordInput.type = 'password';
+    icon.classList.remove('bi-eye-slash');
+    icon.classList.add('bi-eye');
+  }
+});
+</script>
+{% endblock %}
