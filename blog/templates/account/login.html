@@ -1,0 +1,45 @@
+-login.html-
+
+{% extends "blog/base.html" %}
+
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block head_title %}{% trans "Log In" %}{% endblock %}
+
+{% block content %}
+
+<div class="container" style="height:100vh">
+  <div class="row justify-content-center h-100">
+      <div class="col align-self-center text-center card text-white bg-jellyho my-3" style="max-width: 25rem;">
+        <div class="card-header"><h1 style="font-family: 'Staatliches', cursive;">JELLYHO</h1></div>
+        <div class="card-body">
+        <h3 class="card-title">Log In</h1>
+
+          {% get_providers as socialaccount_providers %}
+
+          <form class="login" method="POST" action="{% url 'account_login' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+            <button class="primaryAction" type="submit">Log In</button>
+          </form>
+          {% if socialaccount_providers %}
+
+          <div class="my-2">
+          <a href="/accounts/signup/?process=login&{{ redirect_field_name }}={{ redirect_field_value }}" role="button" class="btn btn btn-light my-1" style="display:block"><i class="far fa-envelope"></i> Sign Up by Email</a>
+          <a href="/accounts/google/login/?process=login&{{ redirect_field_name }}={{ redirect_field_value }}" role="button" class="btn btn btn-light my-1" style="display:block"><i class="fab fa-google"></i> Login with Google</a>
+          </div>
+          {% include "socialaccount/snippets/login_extra.html" %}
+
+          {% else %}
+          <p>{% blocktrans %}If you have not created an account yet, then please
+          <a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
+          {% endif %}
+        </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
