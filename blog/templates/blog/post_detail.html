@@ -10,4 +10,5 @@
 {% if user == post.author %}
 <a href="{% url 'post_update' post.pk %}">수정</a>
 <a href="{% url 'post_delete' post.pk %}">삭제</a>
-{% endif %} {% endblock %}
+{% endif %} 
+{% endblock %}

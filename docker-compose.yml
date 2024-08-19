@@ -1,0 +1,16 @@
+services:
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py migrate &&
+             gunicorn --bind 0.0.0.0:8000 blog_project.wsgi:application"
+    volumes:
+      - .:/usr/src/app
+      - sqlite_data:/usr/src/app/db
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+
+volumes:
+  sqlite_data:
