@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "bootstrap4",
     "blog",
     "widget_tweaks",
+    "imagekit",
 ]
 
 MIDDLEWARE = [

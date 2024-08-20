@@ -1,4 +1,5 @@
 {% extends 'blog/base.html' %}
+{% load widget_tweaks %}
 
 {% block title %}{% if form.instance.pk %}Edit Post{% else %}Create New Post{% endif %}{% endblock %}
 
@@ -19,7 +20,7 @@
                                 {% if field.name in 'head_image,file_upload' %}
                                     {{ field }}
                                 {% else %}
-                                    {{ field }}
+                                    {% render_field field class="form-control" %}
                                 {% endif %}
                                 {% if field.errors %}
                                     {% for error in field.errors %}
