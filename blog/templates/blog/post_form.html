@@ -7,24 +7,24 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
+            <div class="card shadow-lg border-0 rounded-4" style="background-color: #1b1f3a; border: 1px solid #5c16c7;">
+                <div class="card-header bg-gradient text-white rounded-top-4" style="background: linear-gradient(90deg, #5c16c7, #3a1a7d);">
                     <h2 class="mb-0">{% if form.instance.pk %}Edit Post{% else %}Create New Post{% endif %}</h2>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="color: #c7c8f4;">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% for field in form %}
                             <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                <label for="{{ field.id_for_label }}" class="form-label fw-bold" style="color: #1b1f3a;">{{ field.label }}</label>
                                 {% if field.name in 'head_image,file_upload' %}
                                     {{ field }}
                                 {% else %}
-                                    {% render_field field class="form-control" %}
+                                    {% render_field field class="form-control rounded-3 shadow-sm" style="background-color: #2d3352; color: #c7c8f4; border: 1px solid #5c16c7;" %}
                                 {% endif %}
                                 {% if field.errors %}
                                     {% for error in field.errors %}
-                                        <div class="invalid-feedback d-block">
+                                        <div class="invalid-feedback d-block" style="color: #ff4c6e;">
                                             {{ error }}
                                         </div>
                                     {% endfor %}
@@ -35,7 +35,7 @@
                             </div>
                         {% endfor %}
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">Save</button>
+                            <button type="submit" class="btn btn-primary btn-lg rounded-3" style="background: linear-gradient(90deg, #5c16c7, #3a1a7d); border: none;">Save</button>
                         </div>
                     </form>
                 </div>

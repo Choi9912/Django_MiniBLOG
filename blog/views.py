@@ -1,3 +1,5 @@
+from django.http import JsonResponse
+from django.views import View
 from django.views.generic import (
     ListView,
     DetailView,
@@ -141,16 +143,24 @@ class TagDetailView(DetailView):
         return context
 
 
-class PostLikeToggleView(LoginRequiredMixin, DetailView):
-    model = Post
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
+
+@method_decorator(csrf_exempt, name="dispatch")
+class PostLikeToggleView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        post = self.get_object()
-        if request.user in post.likes.all():
-            post.likes.remove(request.user)
+        post = get_object_or_404(Post, pk=kwargs["pk"])
+        user = request.user
+
+        if user in post.likes.all():
+            post.likes.remove(user)
+            liked = False
         else:
-            post.likes.add(request.user)
-        return redirect("post_detail", pk=post.pk)
+            post.likes.add(user)
+            liked = True
+
+        return JsonResponse({"likes_count": post.likes.count(), "liked": liked})
 
 
 class CommentLikeToggleView(LoginRequiredMixin, DetailView):
