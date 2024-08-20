@@ -1,0 +1,16 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{% if form.instance.pk %}댓글 수정{% else %}댓글 작성{% endif %}{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">{% if form.instance.pk %}댓글 수정{% else %}댓글 작성{% endif %}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ form.content.id_for_label }}">내용:</label>
+            {{ form.content }}
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">{% if form.instance.pk %}수정{% else %}작성{% endif %}</button>
+        <a href="{% url 'post_detail' form.instance.post.pk %}" class="btn btn-secondary mt-3">취소</a>
+    </form>
+{% endblock %}

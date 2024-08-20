@@ -1,14 +1,107 @@
-{% extends 'blog/base.html' %} {% block title %}{{ post.title }}{% endblock %}
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
 {% block content %}
-<article>
-  <h2>{{ post.title }}</h2>
-  <p>
-    작성자: {{ post.author }} | 작성일: {{ post.created_at|date:"Y-m-d H:i" }}
-  </p>
-  <div>{{ post.content|linebreaks }}</div>
-</article>
+{% if post.head_image %}
+    <img src="{{ post.head_image.url }}" alt="{{ post.title }}" class="img-fluid mb-3">
+{% endif %}
+
+<p>
+    <small>
+        Posted by {{ post.author }} on {{ post.created_at|date:"F d, Y" }}
+        | Category: 
+        {% if post.category %}
+            <a href="{% url 'category_posts' post.category.slug %}">{{ post.category.name }}</a>
+        {% else %}
+            Uncategorized
+        {% endif %}
+        | Tags: 
+        {% for tag in post.tags.all %}
+            <a href="{% url 'tag_posts' tag.slug %}">{{ tag.name }}</a>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            No tags
+        {% endfor %}
+        | Views: {{ post.view_count }}
+    </small>
+</p>
+
+<div class="mb-3">{{ post.content|linebreaks }}</div>
+
+{% if post.file_upload %}
+    <p>
+        <a href="{{ post.file_upload.url }}" class="btn btn-primary" download>
+            Download attached file
+        </a>
+    </p>
+{% endif %}
+
+<form action="{% url 'post_like_toggle' post.pk %}" method="post" class="d-inline">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-primary">
+        {% if user in post.likes.all %}Unlike{% else %}Like{% endif %}
+        ({{ post.likes.count }})
+    </button>
+</form>
+
 {% if user == post.author %}
-<a href="{% url 'post_update' post.pk %}">수정</a>
-<a href="{% url 'post_delete' post.pk %}">삭제</a>
-{% endif %} 
+    <a href="{% url 'post_update' post.pk %}" class="btn btn-outline-secondary">Edit</a>
+    <a href="{% url 'post_delete' post.pk %}" class="btn btn-outline-danger">Delete</a>
+{% endif %}
+
+<h2 class="mt-4">Comments</h2>
+{% if user.is_authenticated %}
+    <form action="{% url 'comment_create' post.pk %}" method="post" class="mb-3">
+        {% csrf_token %}
+        <div class="form-group">
+            <textarea name="content" class="form-control" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Add Comment</button>
+    </form>
+{% endif %}
+
+{% for comment in post.comments.all %}
+    <div class="card mb-2">
+        <div class="card-body">
+            <p class="card-text">{{ comment.content }}</p>
+            <p class="card-text">
+                <small class="text-muted">
+                    Posted by {{ comment.author }} on {{ comment.created_at|date:"F d, Y" }}
+                </small>
+            </p>
+            <form action="{% url 'comment_like_toggle' comment.pk %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-primary">
+                    {% if user in comment.likes.all %}Unlike{% else %}Like{% endif %}
+                    ({{ comment.likes.count }})
+                </button>
+            </form>
+            {% if user == comment.author %}
+                <a href="{% url 'comment_update' comment.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                <a href="{% url 'comment_delete' comment.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <a href="{% url 'reply_create' comment.pk %}" class="btn btn-sm btn-outline-info">Reply</a>
+            {% endif %}
+        </div>
+    </div>
+    {% for reply in comment.replies.all %}
+        <div class="card mb-2 ms-4">
+            <div class="card-body">
+                <p class="card-text">{{ reply.content }}</p>
+                <p class="card-text">
+                    <small class="text-muted">
+                        Posted by {{ reply.author }} on {{ reply.created_at|date:"F d, Y" }}
+                    </small>
+                </p>
+                {% if user == reply.author %}
+                    <a href="{% url 'comment_update' reply.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    <a href="{% url 'comment_delete' reply.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% empty %}
+    <p>No comments yet.</p>
+{% endfor %}
 {% endblock %}

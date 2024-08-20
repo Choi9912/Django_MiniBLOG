@@ -1,0 +1,44 @@
+{% extends 'blog/base.html' %}
+{% load widget_tweaks %}
+
+
+   {% block title %}Add Reply{% endblock %}
+
+   {% block content %}
+   <div class="container mt-5">
+       <div class="row justify-content-center">
+           <div class="col-md-8">
+               <div class="card">
+                   <div class="card-header bg-primary text-white">
+                       <h2 class="mb-0">Add Reply</h2>
+                   </div>
+                   <div class="card-body">
+                       <form method="post">
+                           {% csrf_token %}
+                           {% for field in form %}
+                               <div class="mb-3">
+                                   <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                   <textarea name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control">{% if field.value %}{{ field.value }}{% endif %}</textarea>
+                                   {% if field.errors %}
+                                       {% for error in field.errors %}
+                                           <div class="invalid-feedback d-block">
+                                               {{ error }}
+                                           </div>
+                                       {% endfor %}
+                                   {% endif %}
+                                   {% if field.help_text %}
+                                       <small class="form-text text-muted">{{ field.help_text }}</small>
+                                   {% endif %}
+                               </div>
+                           {% endfor %}
+                           <div class="d-grid gap-2">
+                               <button type="submit" class="btn btn-primary">Submit</button>
+                           </div>
+                       </form>
+                       <a href="{% url 'post_detail' parent_comment.post.pk %}" class="btn btn-secondary mt-3">Cancel</a>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+   {% endblock %}

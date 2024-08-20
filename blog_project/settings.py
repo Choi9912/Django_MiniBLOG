@@ -12,16 +12,34 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+load_dotenv()
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-%d#@ptbb@nt*v+i$t0#wfs_5f4&byyjo!xg!wz)gnr2ap8&-0v"
+# 다른 설정들...
+
+# SECRET_KEY를 환경 변수에서 가져옴
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+# SECRET_KEY가 없으면 오류 발생
+if not SECRET_KEY:
+    raise ValueError("No SECRET_KEY set for Django application")
+
+
+def get_env_variable(var_name):
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        error_msg = f"Set the {var_name} environment variable"
+        raise ImproperlyConfigured(error_msg)
+
+
+SECRET_KEY = get_env_variable("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -45,6 +63,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "bootstrap4",
     "blog",
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
@@ -155,3 +174,8 @@ STATIC_ROOT = BASE_DIR / "static"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+MEDIA_URL = "/media/"
+
+# 미디어 파일이 저장될 경로
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
