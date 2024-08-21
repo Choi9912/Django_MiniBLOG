@@ -1,6 +1,20 @@
 # blog/models.py
 from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
+from django.contrib.auth.models import User
+from django.dispatch import receiver
+from imagekit.models import ProcessedImageField
+from imagekit.processors import ResizeToFill
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(max_length=500, blank=True)
+    profile_photo = models.ImageField(upload_to="profile_photos/", blank=True)
+
+    def __str__(self):
+        return self.user.username
 
 
 class Category(models.Model):
@@ -36,12 +50,6 @@ class Tag(models.Model):
 
     def get_absolute_url(self):
         return f"/blog/tag/{self.slug}/"
-
-
-from django.db import models
-from django.contrib.auth.models import User
-from imagekit.models import ProcessedImageField
-from imagekit.processors import ResizeToFill
 
 
 class Post(models.Model):

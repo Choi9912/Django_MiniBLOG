@@ -1,0 +1,20 @@
+{% extends "blog/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="post-card">
+    <div class="post-header">
+        <img src="https://via.placeholder.com/64" alt="User Avatar" style="width: 64px; height: 64px;">
+        <h2 class="ms-3">{{ user.username }}</h2>
+    </div>
+    <div class="post-caption">
+        <p><strong>{% trans "Email" %}:</strong> {{ user.email }}</p>
+        <p><strong>{% trans "Bio" %}:</strong> {{ profile.bio }}</p>
+        <p><strong>{% trans "Location" %}:</strong> {{ profile.location }}</p>
+        <p><strong>{% trans "Birth Date" %}:</strong> {{ profile.birth_date }}</p>
+    </div>
+    <div class="post-actions">
+        <a href="{% url 'profile_update' %}" class="btn btn-primary">{% trans "Update Profile" %}</a>
+    </div>
+</div>
+{% endblock %}

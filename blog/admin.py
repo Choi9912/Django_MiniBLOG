@@ -1,5 +1,10 @@
 from django.contrib import admin
-from .models import Post, Category, Tag, Comment
+from .models import Post, Category, Profile, Tag, Comment
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "bio"]
 
 
 class CategoryAdmin(admin.ModelAdmin):

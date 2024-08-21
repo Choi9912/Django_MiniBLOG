@@ -1,9 +1,11 @@
 from django.urls import path
 from . import views
-from .views import CustomLoginView
+from .views import CustomLoginView, ProfileUpdateView, ProfileView
 
 urlpatterns = [
     path("", views.PostListView.as_view(), name="post_list"),
+    path("profile/", views.ProfileView.as_view(), name="profile_view"),
+    path("profile/edit/", views.ProfileUpdateView.as_view(), name="profile_update"),
     path("post/<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
     path("post/new/", views.PostCreateView.as_view(), name="post_create"),
     path("post/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post_update"),
@@ -40,10 +42,11 @@ urlpatterns = [
         views.ReplyCreateView.as_view(),
         name="reply_create",
     ),
+    path("categories/", views.CategoryListView.as_view(), name="category_list"),
+    path("tags/", views.TagListView.as_view(), name="tag_list"),
     path(
         "category/<str:slug>/",
         views.CategoryPostListView.as_view(),
         name="category_posts",
     ),
-    path("tag/<str:slug>/", views.TagPostListView.as_view(), name="tag_posts"),
 ]

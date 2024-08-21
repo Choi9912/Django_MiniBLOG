@@ -1,0 +1,47 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Categories</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for category in categories %}
+        <div class="col">
+            <a href="{% url 'category_posts' category.slug %}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ category.name }}</h5>
+                        <p class="card-text text-muted">{{ category.post_count }} posts</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p>No categories found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+    .card-title {
+        font-weight: 600;
+        color: #262626;
+    }
+    .card-text {
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}

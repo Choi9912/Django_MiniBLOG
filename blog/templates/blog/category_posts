@@ -1,0 +1,98 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Posts{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">{{ category.name }}</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for post in posts %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-white border-0 p-3">
+                    <div class="d-flex align-items-center">
+                        <img src="{% if post.author.profile.profile_photo %}{{ post.author.profile.profile_photo.url }}{% else %}{% static 'blog/default_profile.png' %}{% endif %}" class="rounded-circle me-2" width="32" height="32" alt="{{ post.author.username }}">
+                        <span class="fw-bold">{{ post.author.username }}</span>
+                    </div>
+                </div>
+                {% if post.head_image %}
+                <img src="{{ post.head_image.url }}" class="card-img-top" alt="{{ post.title }}">
+                {% else %}
+                <img src="{% static 'blog/default_post_image.png' %}" class="card-img-top" alt="Default post image">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title }}</h5>
+                    <p class="card-text text-muted">{{ post.content|truncatechars:100 }}</p>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <small class="text-muted">{{ post.created_at|date:"F d, Y" }}</small>
+                    <a href="{% url 'post_detail' post.pk %}" class="btn btn-sm btn-outline-primary float-end">Read more</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p>No posts found in this category.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        transition: transform 0.3s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    .card-img-top {
+        height: 200px;
+        object-fit: cover;
+    }
+    .card-title {
+        font-weight: 600;
+        color: #262626;
+    }
+    .card-text {
+        font-size: 0.9rem;
+    }
+    .pagination .page-link {
+        color: #262626;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #262626;
+        border-color: #262626;
+    }
+</style>
+{% endblock %}

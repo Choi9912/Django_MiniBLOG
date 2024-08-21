@@ -12,7 +12,10 @@ from django.urls import reverse_lazy, reverse
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
 from allauth.account.views import LoginView
-from .models import Post, Comment, Category, Tag
+
+from blog.forms import ProfileForm
+from .models import Post, Comment, Category, Tag, Profile
+from django.db.models import Count
 
 
 class CustomLoginView(LoginView):
@@ -22,11 +25,39 @@ class CustomLoginView(LoginView):
         return reverse("post_list")
 
 
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = Profile
+    form_class = ProfileForm
+    template_name = "blog/profile_update.html"
+    success_url = reverse_lazy("profile_view")
+
+    def get_object(self, queryset=None):
+        return self.request.user.profile
+
+
+class ProfileView(LoginRequiredMixin, DetailView):
+    model = Profile
+    template_name = "blog/profile.html"
+    context_object_name = "profile"
+
+    def get_object(self, queryset=None):
+        profile, created = Profile.objects.get_or_create(user=self.request.user)
+        return profile
+
+
 class PostListView(ListView):
     model = Post
     template_name = "blog/post_list.html"
     context_object_name = "posts"
+    paginate_by = 6
+
     ordering = ["-created_at"]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = Category.objects.all()
+        context["tags"] = Tag.objects.all()
+        return context
 
 
 class PostDetailView(DetailView):
@@ -114,15 +145,25 @@ class CategoryListView(ListView):
     template_name = "blog/category_list.html"
     context_object_name = "categories"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = Category.objects.annotate(post_count=Count("post"))
+        return context
 
-class CategoryDetailView(DetailView):
-    model = Category
-    template_name = "blog/category_detail.html"
-    context_object_name = "category"
+
+class CategoryPostListView(ListView):
+    model = Post
+    template_name = "blog/category_posts.html"
+    context_object_name = "posts"
+    paginate_by = 6  # 페이지당 포스트 수, PostListView와 일치시킴
+
+    def get_queryset(self):
+        self.category = get_object_or_404(Category, slug=self.kwargs["slug"])
+        return Post.objects.filter(category=self.category).order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["posts"] = Post.objects.filter(category=self.object)
+        context["category"] = self.category
         return context
 
 
@@ -130,6 +171,11 @@ class TagListView(ListView):
     model = Tag
     template_name = "blog/tag_list.html"
     context_object_name = "tags"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tags"] = Tag.objects.annotate(post_count=Count("post"))
+        return context
 
 
 class TagDetailView(DetailView):
@@ -195,21 +241,3 @@ class ReplyCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse("post_detail", kwargs={"pk": self.object.post.pk})
-
-
-class CategoryPostListView(ListView):
-    model = Post
-    template_name = "blog/category_posts.html"
-    context_object_name = "posts"
-
-    def get_queryset(self):
-        return Post.objects.filter(category__slug=self.kwargs["slug"])
-
-
-class TagPostListView(ListView):
-    model = Post
-    template_name = "blog/tag_posts.html"
-    context_object_name = "posts"
-
-    def get_queryset(self):
-        return Post.objects.filter(tags__slug=self.kwargs["slug"])

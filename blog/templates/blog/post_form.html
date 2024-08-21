@@ -1,41 +1,45 @@
 {% extends 'blog/base.html' %}
 {% load widget_tweaks %}
 
-{% block title %}{% if form.instance.pk %}Edit Post{% else %}Create New Post{% endif %}{% endblock %}
+{% block title %}{% if form.instance.pk %}Edit Post{% else %}New Post{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container-fluid mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg border-0 rounded-4" style="background-color: #1b1f3a; border: 1px solid #5c16c7;">
-                <div class="card-header bg-gradient text-white rounded-top-4" style="background: linear-gradient(90deg, #5c16c7, #3a1a7d);">
-                    <h2 class="mb-0">{% if form.instance.pk %}Edit Post{% else %}Create New Post{% endif %}</h2>
-                </div>
-                <div class="card-body" style="color: #c7c8f4;">
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm" style="background-color: #fff;">
+                <div class="card-body p-4">
+                    <h2 class="mb-4 text-center" style="color: #262626;">{% if form.instance.pk %}Edit Post{% else %}New Post{% endif %}</h2>
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         {% for field in form %}
-                            <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label fw-bold" style="color: #1b1f3a;">{{ field.label }}</label>
+                            <div class="mb-4">
                                 {% if field.name in 'head_image,file_upload' %}
-                                    {{ field }}
+                                    <label for="{{ field.id_for_label }}" class="form-label d-block mb-2" style="color: #262626;">
+                                        {{ field.label }}
+                                    </label>
+                                    <div class="custom-file-upload">
+                                        {{ field }}
+                                        <label for="{{ field.id_for_label }}" class="btn btn-outline-primary w-100">
+                                            Choose {{ field.label }}
+                                        </label>
+                                    </div>
                                 {% else %}
-                                    {% render_field field class="form-control rounded-3 shadow-sm" style="background-color: #2d3352; color: #c7c8f4; border: 1px solid #5c16c7;" %}
+                                    {% render_field field class="form-control border" style="background-color: #fafafa; color: #262626; border-radius: 3px;" placeholder=field.label %}
                                 {% endif %}
                                 {% if field.errors %}
                                     {% for error in field.errors %}
-                                        <div class="invalid-feedback d-block" style="color: #ff4c6e;">
+                                        <div class="text-danger small mt-1">
                                             {{ error }}
                                         </div>
                                     {% endfor %}
                                 {% endif %}
-                                {% if field.help_text %}
-                                    <small class="form-text text-muted">{{ field.help_text }}</small>
-                                {% endif %}
                             </div>
                         {% endfor %}
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-3" style="background: linear-gradient(90deg, #5c16c7, #3a1a7d); border: none;">Save</button>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary" style="background-color: #0095f6; border: none; border-radius: 3px;">
+                                {% if form.instance.pk %}Update{% else %}Share{% endif %}
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -43,4 +47,47 @@
         </div>
     </div>
 </div>
+
+<style>
+    body {
+        background-color: #fafafa;
+    }
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #0095f6;
+    }
+    .custom-file-upload input[type="file"] {
+        display: none;
+    }
+    .custom-file-upload label {
+        cursor: pointer;
+        padding: 8px 12px;
+        background-color: transparent;
+        border: 1px solid #dbdbdb;
+        color: #0095f6;
+        transition: all 0.3s;
+    }
+    .custom-file-upload label:hover {
+        background-color: rgba(0,149,246,0.1);
+    }
+    .btn-primary {
+        font-weight: 600;
+    }
+    .btn-primary:hover {
+        background-color: #0086e0;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function(e) {
+            const fileName = e.target.files[0].name;
+            const label = this.nextElementSibling;
+            label.textContent = fileName;
+        });
+    });
+});
+</script>
 {% endblock %}
