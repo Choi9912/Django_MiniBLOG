@@ -1,13 +1,24 @@
 {% extends 'blog/base.html' %}
+{% load static %}
 
 {% block title %}Blog Posts{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'blog/post_list.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="post-grid">
     {% for post in posts %}
     <div class="post">
         <div class="post-header">
-            <img src="https://via.placeholder.com/32" alt="{{ post.author.username }} Avatar" class="avatar">
+            {% if post.author.profile.profile_picture %}
+            <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author.username }} Avatar" class="avatar">
+        {% else %}
+        <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+            <i class="fas fa-user text-white"></i>
+        </div>        {% endif %}
             <span class="username">{{ post.author.username }}</span>
         </div>
         <div class="post-image">

@@ -1,11 +1,11 @@
 from django.urls import path
 from . import views
-from .views import CustomLoginView, ProfileUpdateView, ProfileView
+from .views import CommentSentimentView, CustomLoginView, ProfileUpdateView, ProfileView
 
 urlpatterns = [
     path("", views.PostListView.as_view(), name="post_list"),
     path("profile/", views.ProfileView.as_view(), name="profile_view"),
-    path("profile/edit/", views.ProfileUpdateView.as_view(), name="profile_update"),
+    path("profile/update/", views.ProfileUpdateView.as_view(), name="profile_update"),
     path("post/<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
     path("post/new/", views.PostCreateView.as_view(), name="post_create"),
     path("post/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post_update"),
@@ -50,4 +50,9 @@ urlpatterns = [
         name="category_posts",
     ),
     path("tag/<str:slug>/", views.TagPostListView.as_view(), name="tag_posts"),
+    path(
+        "post/<int:pk>/comment-sentiment/",
+        CommentSentimentView.as_view(),
+        name="comment_sentiment",
+    ),
 ]

@@ -1,3 +1,4 @@
-from django.test import TestCase
+import torch
 
-# Create your tests here.
+print(torch.__version__)
+print(torch.cuda.is_available())

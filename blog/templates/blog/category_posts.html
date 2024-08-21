@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}{{ category.name }} - Posts{% endblock %}
+<link rel="stylesheet" href="{% static 'blog/category_post.css' %}">
 
 {% block content %}
 <div class="container mt-4">
@@ -12,7 +13,7 @@
             <div class="card h-100 border-0 shadow-sm">
                 <div class="card-header bg-white border-0 p-3">
                     <div class="d-flex align-items-center">
-                        <img src="{% if post.author.profile.profile_photo %}{{ post.author.profile.profile_photo.url }}{% else %}{% static 'blog/default_profile.png' %}{% endif %}" class="rounded-circle me-2" width="32" height="32" alt="{{ post.author.username }}">
+                        <img src="{% if post.author.profile.profile_photo %}{{ post.author.profile.profile_photo.url }}{% else %}https://via.placeholder.com/32{% endif %}" class="rounded-circle me-2" width="32" height="32" alt="{{ post.author.username }}">
                         <span class="fw-bold">{{ post.author.username }}</span>
                     </div>
                 </div>
@@ -70,29 +71,6 @@
 </div>
 
 <style>
-    .card {
-        transition: transform 0.3s ease-in-out;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-    }
-    .card-img-top {
-        height: 200px;
-        object-fit: cover;
-    }
-    .card-title {
-        font-weight: 600;
-        color: #262626;
-    }
-    .card-text {
-        font-size: 0.9rem;
-    }
-    .pagination .page-link {
-        color: #262626;
-    }
-    .pagination .page-item.active .page-link {
-        background-color: #262626;
-        border-color: #262626;
-    }
+
 </style>
 {% endblock %}

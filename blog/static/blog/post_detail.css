@@ -1,0 +1,107 @@
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #efefef;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.username {
+    font-weight: 600;
+    color: #262626;
+    font-size: 14px;
+    line-height: 18px;
+}
+
+.post-time {
+    color: #8e8e8e;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.edit-link {
+    color: #262626;
+    font-size: 16px;
+}
+
+.edit-link:hover {
+    color: #8e8e8e;
+}
+    .post-actions {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+    }
+    
+    .like-form {
+        margin-right: 12px;
+    }
+    
+    .like-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        transition: transform 0.15s ease-in-out;
+    }
+    
+    .like-button:hover {
+        transform: scale(1.1);
+    }
+    
+    .like-button:active {
+        transform: scale(0.9);
+    }
+    
+    .heart-icon {
+        fill: none;
+        stroke: #262626;
+        stroke-width: 2;
+        transition: all 0.2s ease;
+    }
+    
+    .heart-full {
+        fill: none;
+        transition: fill 0.2s ease;
+    }
+    
+    .like-button.liked .heart-full {
+        fill: #ed4956;
+    }
+    
+    .like-button.liked .heart-icon {
+        stroke: #ed4956;
+    }
+    
+    .likes-count {
+        font-weight: 600;
+        color: #262626;
+        font-size: 14px;
+    }
+    
+    @keyframes likeAnimation {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+    
+    .like-button.liked .heart-icon {
+        animation: likeAnimation 0.3s ease-in-out;
+    }

@@ -1,10 +1,15 @@
 {% extends "blog/base.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block content %}
 <div class="post-card">
-    <div class="post-header">
-        <img src="https://via.placeholder.com/64" alt="User Avatar" style="width: 64px; height: 64px;">
+    <div class="post-header d-flex align-items-center">
+        {% if profile.profile_picture %}
+            <img src="{{ profile.profile_picture.url }}" alt="{{ user.username }}" style="width: 64px; height: 64px; border-radius: 50%;">
+        {% else %}
+            <img src="https://via.placeholder.com/32" alt="{{ user.username }}" style="width: 64px; height: 64px; border-radius: 50%;">
+        {% endif %}
         <h2 class="ms-3">{{ user.username }}</h2>
     </div>
     <div class="post-caption">
