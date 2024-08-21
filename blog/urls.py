@@ -49,4 +49,5 @@ urlpatterns = [
         views.CategoryPostListView.as_view(),
         name="category_posts",
     ),
+    path("tag/<str:slug>/", views.TagPostListView.as_view(), name="tag_posts"),
 ]

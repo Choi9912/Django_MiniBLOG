@@ -1,0 +1,30 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Tag List{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Tags</h1>
+    
+    {% if tags %}
+        <div class="row">
+            {% for tag in tags %}
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'tag_posts' tag.slug %}">{{ tag.name }}</a>
+                            </h5>
+                            <p class="card-text">
+                                Posts: {{ tag.post_set.count }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No tags available.</p>
+    {% endif %}
+</div>
+{% endblock %}

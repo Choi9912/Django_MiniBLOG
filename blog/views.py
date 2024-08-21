@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
 from allauth.account.views import LoginView
 
-from blog.forms import ProfileForm
+from blog.forms import CustomPostForm, ProfileForm
 from .models import Post, Comment, Category, Tag, Profile
 from django.db.models import Count
 
@@ -73,8 +73,8 @@ class PostDetailView(DetailView):
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
+    form_class = CustomPostForm
     template_name = "blog/post_form.html"
-    fields = ["title", "content", "category", "tags", "head_image", "file_upload"]
     success_url = reverse_lazy("post_list")
 
     def form_valid(self, form):
@@ -84,8 +84,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
 class PostUpdateView(LoginRequiredMixin, UpdateView):
     model = Post
+    form_class = CustomPostForm
     template_name = "blog/post_form.html"
-    fields = ["title", "content", "category", "tags", "head_image", "file_upload"]
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["tags_input"] = ", ".join(tag.name for tag in self.object.tags.all())
+        return initial
 
     def get_success_url(self):
         return reverse("post_detail", kwargs={"pk": self.object.pk})
@@ -175,6 +180,25 @@ class TagListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tags"] = Tag.objects.annotate(post_count=Count("post"))
+        return context
+
+
+class TagPostListView(ListView):
+    model = Post
+    template_name = "blog/tag_posts.html"
+    context_object_name = "posts"
+    paginate_by = 5
+
+    def get_queryset(self):
+        tag_slug = self.kwargs.get("slug")
+        if not tag_slug:
+            return Post.objects.none()  # 빈 쿼리셋 반환
+        self.tag = get_object_or_404(Tag, slug=tag_slug)
+        return Post.objects.filter(tags=self.tag).order_by("-created_at")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tag"] = getattr(self, "tag", None)
         return context
 
 
