@@ -2,33 +2,31 @@
 {% load static %}
 
 {% block title %}{{ category.name }} - Posts{% endblock %}
-<link rel="stylesheet" href="{% static 'blog/category_post.css' %}">
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4 text-center">{{ category.name }}</h2>
+    <h2 class="text-center mb-4" style="font-size: 2.5rem; color: #333;">{{ category.name }}</h2>
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% for post in posts %}
         <div class="col">
-            <div class="card h-100 border-0 shadow-sm">
-                <div class="card-header bg-white border-0 p-3">
-                    <div class="d-flex align-items-center">
+            <div class="card h-100 border-0 shadow-sm rounded">
+                {% if post.head_image %}
+                    <img src="{{ post.head_image.url }}" class="card-img-top rounded-top" alt="{{ post.title }}">
+                {% else %}
+                    <div class="card-img-top rounded-top" style="height: 200px;"></div>
+
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
                         <img src="{% if post.author.profile.profile_photo %}{{ post.author.profile.profile_photo.url }}{% else %}https://via.placeholder.com/32{% endif %}" class="rounded-circle me-2" width="32" height="32" alt="{{ post.author.username }}">
                         <span class="fw-bold">{{ post.author.username }}</span>
                     </div>
-                </div>
-                {% if post.head_image %}
-                <img src="{{ post.head_image.url }}" class="card-img-top" alt="{{ post.title }}">
-                {% else %}
-                <img src="{% static 'blog/default_post_image.png' %}" class="card-img-top" alt="Default post image">
-                {% endif %}
-                <div class="card-body">
                     <h5 class="card-title">{{ post.title }}</h5>
                     <p class="card-text text-muted">{{ post.content|truncatechars:100 }}</p>
                 </div>
-                <div class="card-footer bg-white border-0">
+                <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center">
                     <small class="text-muted">{{ post.created_at|date:"F d, Y" }}</small>
-                    <a href="{% url 'post_detail' post.pk %}" class="btn btn-sm btn-outline-primary float-end">Read more</a>
+                    <a href="{% url 'post_detail' post.pk %}" class="btn btn-sm btn-outline-primary rounded-pill">Read more</a>
                 </div>
             </div>
         </div>
@@ -71,6 +69,106 @@
 </div>
 
 <style>
+    /* category_post.css */
+
+body {
+    background-color: #f9f9f9;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.card-img-top {
+    border-radius: 0;
+    height: 180px;
+    object-fit: cover;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.card-text {
+    font-size: 0.875rem;
+    color: #666;
+}
+
+.btn-outline-primary {
+    border-color: #007bff;
+    color: #007bff;
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+    border-radius: 50px;
+    padding: 0.5rem 1.5rem;
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    color: #343a40;
+    border-color: #343a40;
+}
+
+.pagination {
+    font-size: 0.875rem;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #fff;
+}
+
+.page-link {
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.page-link:hover {
+    background-color: #f1f1f1;
+}
 
 </style>
 {% endblock %}

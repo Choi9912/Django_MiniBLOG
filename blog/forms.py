@@ -8,6 +8,9 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ["bio", "profile_picture", "birth_date", "location"]
 
+    birth_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    location = forms.CharField(max_length=100, required=False)
+
 
 class CustomPostForm(forms.ModelForm):
     tags = forms.CharField(

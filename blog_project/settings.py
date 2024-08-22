@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     "blog",
     "widget_tweaks",
     "imagekit",
+    "markdown_deux",
+    "ckeditor",
 ]
 
 MIDDLEWARE = [
@@ -75,7 +77,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "allauth.account.middleware.AccountMiddleware",  # 이 줄을 추가하세요
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "blog_project.urls"

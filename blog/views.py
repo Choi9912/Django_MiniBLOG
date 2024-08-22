@@ -44,14 +44,26 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class ProfileView(LoginRequiredMixin, DetailView):
+from django.contrib.auth.models import User
+
+
+class ProfileView(DetailView):
     model = Profile
     template_name = "accounts/profile.html"
     context_object_name = "profile"
 
     def get_object(self, queryset=None):
-        profile, created = Profile.objects.get_or_create(user=self.request.user)
-        return profile
+        username = self.kwargs.get("username")
+        return get_object_or_404(Profile, user__username=username)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.object.user
+        context["user_posts"] = Post.objects.filter(author=user).order_by("-created_at")
+        context["is_own_profile"] = (
+            self.request.user.is_authenticated and self.request.user == user
+        )
+        return context
 
 
 class PostListView(ListView):
@@ -60,12 +72,27 @@ class PostListView(ListView):
     context_object_name = "posts"
     paginate_by = 6
 
-    ordering = ["-created_at"]
+    def get_queryset(self):
+        queryset = Post.objects.all()
+
+        # 정렬 옵션 처리
+        sort_by = self.request.GET.get("sort", "latest")
+        if sort_by == "latest":
+            queryset = queryset.order_by("-created_at")
+        elif sort_by == "likes":
+            queryset = queryset.annotate(like_count=Count("likes")).order_by(
+                "-like_count"
+            )
+        elif sort_by == "views":
+            queryset = queryset.order_by("-view_count")
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.all()
         context["tags"] = Tag.objects.all()
+        context["current_sort"] = self.request.GET.get("sort", "latest")
         return context
 
 
@@ -207,7 +234,8 @@ class TagListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tags"] = Tag.objects.annotate(post_count=Count("post"))
+        tags = Tag.objects.annotate(post_count=Count("post")).filter(post_count__gt=0)
+        context["tags"] = tags
         return context
 
 
@@ -293,128 +321,3 @@ class ReplyCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse("post_detail", kwargs={"pk": self.object.post.pk})
-
-
-import logging
-from django.views import View
-from django.shortcuts import render
-from django.core.cache import cache
-from transformers import TFBertForSequenceClassification, BertTokenizer
-import tensorflow as tf
-from concurrent.futures import ThreadPoolExecutor
-import numpy as np
-
-logger = logging.getLogger(__name__)
-
-
-class CommentSentimentView(View):
-    model = None
-    tokenizer = None
-
-    @classmethod
-    def load_model(cls):
-        if cls.model is None or cls.tokenizer is None:
-            try:
-                model_name = "bert-base-multilingual-cased"
-                cls.model = TFBertForSequenceClassification.from_pretrained(model_name)
-                cls.tokenizer = BertTokenizer.from_pretrained(model_name)
-            except Exception as e:
-                logger.error(f"Failed to load model: {str(e)}")
-                raise
-
-    def get(self, request, *args, **kwargs):
-        context = {}
-        try:
-            self.load_model()
-            comments = self.get_queryset()
-            context = self.get_context_data(comments)
-        except Exception as e:
-            logger.error(f"Error in get method: {str(e)}")
-            context["error"] = str(e)
-
-        return render(request, "blog/comment_sentiment.html", context)
-
-    def get_queryset(self):
-        post_pk = self.kwargs["pk"]
-        return Comment.objects.filter(post__pk=post_pk)
-
-    def get_context_data(self, comments):
-        context = {}
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            sentiment_futures = {
-                executor.submit(self.get_cached_sentiment, comment.content): comment
-                for comment in comments
-            }
-            sentiments = []
-            for future in sentiment_futures:
-                comment = sentiment_futures[future]
-                try:
-                    sentiment, confidence = future.result()
-                    sentiments.append((comment, sentiment, confidence))
-                except Exception as e:
-                    logger.error(
-                        f"Error predicting sentiment for comment {comment.id}: {str(e)}"
-                    )
-                    sentiments.append((comment, "Error in prediction", 0.0))
-        context["comments"] = sentiments
-        return context
-
-    def get_cached_sentiment(self, text):
-        cache_key = f"sentiment_{hash(text)}"
-        cached_result = cache.get(cache_key)
-        if cached_result is not None:
-            return cached_result
-        sentiment, confidence = self.predict_sentiment(text)
-        cache.set(cache_key, (sentiment, confidence), timeout=3600)  # Cache for 1 hour
-        return sentiment, confidence
-
-    def predict_sentiment(self, text):
-        try:
-            inputs = self.tokenizer(
-                text, padding=True, truncation=True, return_tensors="tf"
-            )
-            outputs = self.model(inputs)
-            logits = outputs.logits
-            probabilities = tf.nn.softmax(logits, axis=1).numpy()[0]
-            predicted_class = np.argmax(probabilities)
-            confidence = probabilities[predicted_class]
-
-            sentiment_labels = {
-                0: "Very Negative",
-                1: "Negative",
-                2: "Neutral",
-                3: "Positive",
-                4: "Very Positive",
-            }
-
-            # 신뢰도 기반 감정 분류 세분화
-            if confidence < 0.4:
-                sentiment = "불확실하다"
-            elif confidence < 0.6:
-                sentiment = "중립"
-            else:
-                sentiment = sentiment_labels[predicted_class]
-
-            # 결과 해석 개선
-            interpretation = self.interpret_sentiment(sentiment, confidence, text)
-
-            return f"{sentiment} - {interpretation}", confidence
-        except Exception as e:
-            logger.error(f"Error in sentiment prediction: {str(e)}")
-            return "Error in prediction", 0.0
-
-    def interpret_sentiment(self, sentiment, confidence, text):
-        if sentiment == "Uncertain":
-            return "The sentiment is unclear. The model is not confident in its prediction."
-        elif sentiment == "Neutral":
-            return "The text appears to be neutral or balanced in sentiment."
-        else:
-            intensity = "strongly" if confidence > 0.8 else "moderately"
-            return f"The text appears to be {intensity} {sentiment.lower()}."
-
-    @staticmethod
-    def detect_language(text):
-        # 간단한 언어 감지 (한국어 또는 영어)
-        if any("\uac00" <= char <= "\ud7a3" for char in text):
-            return "ko"
-        return "en"
