@@ -65,9 +65,15 @@ INSTALLED_APPS = [
     "blog",
     "widget_tweaks",
     "imagekit",
-    "markdown_deux",
-    "ckeditor",
+    "django_summernote",
 ]
+
+SUMMERNOTE_CONFIG = {
+    "summernote": {
+        "width": "100%",
+        "height": "480",
+    }
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

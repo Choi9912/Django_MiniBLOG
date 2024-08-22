@@ -62,7 +62,7 @@ class Tag(models.Model):
 
 class Post(models.Model):
     title = models.CharField(max_length=200)
-    content = models.TextField()
+    content = models.TextField()  # RichTextField() 대신 일반 TextField 사용
     head_image = ProcessedImageField(
         upload_to="blog/images/%Y/%m/%d/",
         processors=[ResizeToFill(300, 300)],

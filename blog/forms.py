@@ -1,6 +1,7 @@
 from django import forms
 from .models import Post, Profile, Tag
 import re
+from django_summernote.widgets import SummernoteWidget
 
 
 class ProfileForm(forms.ModelForm):
@@ -13,6 +14,7 @@ class ProfileForm(forms.ModelForm):
 
 
 class CustomPostForm(forms.ModelForm):
+    content = forms.CharField(widget=SummernoteWidget())
     tags = forms.CharField(
         required=False,
         widget=forms.TextInput(
@@ -26,7 +28,16 @@ class CustomPostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ["title", "content", "category", "head_image", "file_upload", "tags"]
-        widget = (forms.SelectMultiple(attrs={"class": "form-control"}),)
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "category": forms.Select(attrs={"class": "form-control"}),
+            "head_image": forms.ClearableFileInput(
+                attrs={"class": "form-control-file"}
+            ),
+            "file_upload": forms.ClearableFileInput(
+                attrs={"class": "form-control-file"}
+            ),
+        }
 
     def clean_tags(self):
         tag_string = self.cleaned_data.get("tags", "")

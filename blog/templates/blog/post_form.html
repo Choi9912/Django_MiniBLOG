@@ -6,12 +6,16 @@
 
 {% block extra_head %}
   {{ form.media }}
-{% endblock %}
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="{% static 'ckeditor/ckeditor-init.js' %}"></script>
+  <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+  {% endblock %}
 
 {% block content %}
 <div class="container mt-4">
   <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
+    <div class="col-md-10 col-lg-8">
       <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
           <h2 class="mb-4 text-center">{% if form.instance.pk %}Edit Post{% else %}New Post{% endif %}</h2>
@@ -20,7 +24,8 @@
             {% csrf_token %}
             
             <div class="mb-4">
-              {% render_field form.title class="form-control" placeholder="Title" %}
+              <label for="{{ form.title.id_for_label }}">Title</label>
+              {% render_field form.title class="form-control" placeholder="Enter your post title" %}
             </div>
             
             <div class="mb-4">
@@ -48,15 +53,19 @@
               {% render_field form.file_upload class="form-control" %}
             </div>
             
+            {% if form.birthday %}
             <div class="mb-4">
               <label for="{{ form.birthday.id_for_label }}">Birthday</label>
-              {% render_field form.birthday class="form-control" %}
+              {% render_field form.birthday class="form-control" type="date" %}
             </div>
+            {% endif %}
             
+            {% if form.location %}
             <div class="mb-4">
-              <label for="{{ form.location.id_for_label }}">Location</label>
-              {% render_field form.location class="form-control" %}
+              <label for="{{ form.content.id_for_label }}">Content</label>
+              {{ form.content }}
             </div>
+            {% endif %}
             
             <div class="d-grid">
               <button type="submit" class="btn btn-primary">
@@ -72,10 +81,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // SimpleMDE initialization
-    var simplemde = new SimpleMDE({ element: document.getElementById("{{ form.content.id_for_label }}") });
-
-    // Select2 initialization
+    // Select2 initialization for tags
     $('#{{ form.tags.id_for_label }}').select2({
         tags: true,
         tokenSeparators: [',', ' '],
@@ -88,8 +94,8 @@ document.addEventListener('DOMContentLoaded', function() {
 body {
     background-color: #fafafa;
 }
-.form-control:focus {
-    box-shadow: none;
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0,149,246,0.25);
     border-color: #0095f6;
 }
 .custom-file-upload input[type="file"] {
@@ -107,10 +113,16 @@ body {
     background-color: rgba(0,149,246,0.1);
 }
 .btn-primary {
+    background-color: #0095f6;
+    border-color: #0095f6;
     font-weight: 600;
 }
 .btn-primary:hover {
     background-color: #0086e0;
+    border-color: #0086e0;
+}
+.select2-container .select2-selection--multiple {
+    min-height: 38px;
 }
 </style>
 {% endblock %}

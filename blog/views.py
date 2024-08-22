@@ -142,11 +142,6 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     form_class = CustomPostForm
     template_name = "blog/post_form.html"
 
-    def get_initial(self):
-        initial = super().get_initial()
-        initial["tags_input"] = ", ".join(tag.name for tag in self.object.tags.all())
-        return initial
-
     def get_success_url(self):
         return reverse("post_detail", kwargs={"pk": self.object.pk})
 

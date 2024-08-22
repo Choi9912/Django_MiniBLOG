@@ -5,92 +5,83 @@
 
 {% block styles %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'blog/post_list.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="sort-options">
-    <a href="?sort=latest" class="{% if current_sort == 'latest' %}active{% endif %}">최신순</a>
-    <a href="?sort=likes" class="{% if current_sort == 'likes' %}active{% endif %}">좋아요순</a>
-    <a href="?sort=views" class="{% if current_sort == 'views' %}active{% endif %}">조회순</a>
-</div>
-
-<div class="post-grid">
-    {% for post in posts %}
-    <div class="post">
-        <div class="post-header">
-            <a href="{% url 'profile_view' post.author.username %}" class="profile-link">
-                {% if post.author.profile.profile_picture %}
-                    <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author.username }} Avatar" class="avatar">
-                {% else %}
-                    <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
-                        <i class="fas fa-user text-white"></i>
-                    </div>
-                {% endif %}
-                <span class="username">{{ post.author.username }}</span>
-            </a>
-        </div>
-        <div class="post-image">
-            <a href="{% url 'post_detail' post.pk %}">
-                {% if post.head_image %}
-                    <img src="{{ post.head_image.url }}" alt="{{ post.title }}" class="resized-post-image">
-                {% else %}
-                    <img src="https://via.placeholder.com/300x300" alt="No Image" class="resized-post-image">
-                {% endif %}
-            </a>
-        </div>
-        <div class="post-title">
-            <h2>{{ post.title }}</h2>
-        </div>
-        <div class="post-actions">
-            <form class="like-form" data-post-id="{{ post.pk }}" method="post" action="{% url 'post_like_toggle' post.pk %}">
-                {% csrf_token %}
-                <button type="submit" class="like-button {% if user in post.likes.all %}liked{% endif %}" aria-label="Like">
-                    <svg class="heart-icon" viewBox="0 0 48 48" width="24" height="24">
-                        <path class="heart-empty" d="M34.6 6.1c5.7 0 10.4 5.2 10.4 11.5 0 6.8-5.9 11-11.5 16S25 41.3 24 41.9c-1.1-.7-4.7-4-9.5-8.3-5.7-5-11.5-9.2-11.5-16C3 11.3 7.7 6.1 13.4 6.1c4.2 0 6.5 2 8.1 4.3 1.9 2.6 2.2 3.9 2.5 3.9.3 0 .6-1.3 2.5-3.9 1.6-2.3 3.9-4.3 8.1-4.3z"/>
-                        <path class="heart-full" d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 7.3 5.4 12 10.6 16.5.6.5 1.3 1.1 1.9 1.7l2.3 2c4.4 3.9 6.6 5.9 7.6 6.5.5.3 1.1.5 1.6.5s1.1-.2 1.6-.5c1-.6 2.8-2.2 7.8-6.8l2-1.8c.7-.6 1.3-1.2 2-1.7C42.7 29.6 48 25 48 17.6c0-8-6-14.5-13.4-14.5z"/>
-                    </svg>
-                </button>
-            </form>
-            <span class="likes-count">{{ post.likes.count }} likes</span>
-        </div>
-        <div class="post-caption">
-            <strong>{{ post.author.username }}</strong>
-            <div class="tags">
-                {% if post.tags.all %}
-                    <ul class="tags-list">
-                        {% for tag in post.tags.all %}
-                            <li class="tag-item">
-                                <a href="{% url 'tag_posts' tag.slug %}" class="tag-link">{{ tag.name }}</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p></p>
-                {% endif %}
-            </div>
-        </div>
+    <div class="sort-options">
+        <a href="?sort=latest" class="{% if current_sort == 'latest' %}active{% endif %}">최신순</a>
+        <a href="?sort=likes" class="{% if current_sort == 'likes' %}active{% endif %}">좋아요순</a>
+        <a href="?sort=views" class="{% if current_sort == 'views' %}active{% endif %}">조회순</a>
     </div>
-    {% endfor %}
-</div>
 
-<div class="pagination">
-    <span class="step-links">
-        {% if page_obj.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-        {% endif %}
+    <div class="post-grid">
+        {% for post in posts %}
+            <div class="post">
+                <div class="post-header">
+                    <a href="{% url 'profile_view' post.author.username %}" class="profile-link">
+                        {% if post.author.profile.profile_picture %}
+                            <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author.username }} Avatar" class="avatar">
+                        {% else %}
+                            <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;"></div>
+                        {% endif %}
+                        <span class="username">{{ post.author.username }}</span>
+                    </a>
+                </div>
 
-        <span class="current">
-             Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                <div class="post-image">
+                    <a href="{% url 'post_detail' post.pk %}">
+                        {% if post.head_image %}
+                            <img src="{{ post.head_image.url }}" alt="{{ post.title }}" class="resized-post-image">
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x300" alt="No Image" class="resized-post-image">
+                        {% endif %}
+                    </a>
+                </div>
+
+                <div class="post-title">
+                    <h2>{{ post.title }}</h2>
+                </div>
+
+                <div class="post-actions">
+                    <form action="{% url 'post_like_toggle' post.pk %}" method="POST" class="like-form">
+                        {% csrf_token %}
+                        <button type="submit" class="like-button {% if user in post.likes.all %}liked{% endif %}">
+                            <svg class="heart-icon" viewBox="0 0 48 48" width="24" height="24">
+                                <path class="heart-empty" d="M34.6 6.1c5.7 0 10.4 5.2 10.4 11.5 0 6.8-5.9 11-11.5 16S25 41.3 24 41.9c-1.1-.7-4.7-4-9.5-8.3-5.7-5-11.5-9.2-11.5-16C3 11.3 7.7 6.1 13.4 6.1c4.2 0 6.5 2 8.1 4.3 1.9 2.6 2.2 3.9 2.5 3.9.3 0 .6-1.3 2.5-3.9 1.6-2.3 3.9-4.3 8.1-4.3z"></path>
+                                <path class="heart-full" d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 7.3 5.4 12 10.6 16.5.6.5 1.3 1.1 1.9 1.7l2.3 2c4.4 3.9 6.6 5.9 7.6 6.5.5.3 1.1.5 1.6.5s1.1-.2 1.6-.5c1-.6 2.8-2.2 7.8-6.8l2-1.8c.7-.6 1.3-1.2 2-1.7C42.7 29.6 48 25 48 17.6c0-8-6-14.5-13.4-14.5z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                    <span class="likes-count">{{ post.likes.count }} likes</span>
+                </div>
+
+                <div class="post-caption">
+                    <strong>{{ post.author.username }}</strong>
+                    <div class="tags">
+                        {% if post.tags.all %}
+                            {% for tag in post.tags.all %}
+                                <a href="{% url 'tag_posts' tag.slug %}" class="tag-link">#{{ tag.name }}</a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">« first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+            <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last »</a>
+            {% endif %}
         </span>
-
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
-</div>
+    </div>
 
 <style>
 .sort-options {
@@ -275,6 +266,7 @@
         fill: none;
         transition: fill 0.2s ease;
     }
+    
     .like-button.liked .heart-full {
         fill: #ed4956;
     }
@@ -315,29 +307,35 @@
     }
 </style>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  $(document).ready(function() {
-    $('.like-form').on('submit', function(e) {
-        e.preventDefault();
-        var form = $(this);
-        var url = form.attr('action');
-        var likeButton = form.find('.like-button');
-        var likesCount = form.siblings('.likes-count');
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.like-form').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const url = this.action;
+                const likeButton = this.querySelector('.like-button');
+                const likesCountElement = this.nextElementSibling;
 
-        $.ajax({
-            url: url,
-            type: 'POST',
-            data: form.serialize(),
-            success: function(response) {
-                likesCount.text(response.likes_count + ' likes');
-                likeButton.toggleClass('liked');
-            },
-            error: function(xhr, status, error) {
-                console.error("Error occurred: " + error);
-            }
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    likesCountElement.textContent = `${data.likes_count} likes`;
+                    if (data.liked) {
+                        likeButton.classList.add('liked');
+                    } else {
+                        likeButton.classList.remove('liked');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
         });
     });
-  });
-</script>
+    </script>
 {% endblock %}

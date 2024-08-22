@@ -1,0 +1,24 @@
+.card {
+    transition: transform 0.3s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+.card-title {
+    font-weight: 600;
+    color: #262626;
+}
+.card-text {
+    font-size: 0.9rem;
+}
+.pagination .page-link {
+    color: #262626;
+}
+.pagination .page-item.active .page-link {
+    background-color: #262626;
+    border-color: #262626;
+}

@@ -9,6 +9,7 @@ urlpatterns = [
     path(
         "", RedirectView.as_view(url="/blog/", permanent=True)
     ),  # 루트 URL을 블로그로 리다이렉트
+    path("summernote/", include("django_summernote.urls")),
 ]
 
 # 정적 파일 및 미디어 파일 서빙을 위한 설정 (개발 환경에서만 사용)
