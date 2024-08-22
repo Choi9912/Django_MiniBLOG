@@ -11,6 +11,8 @@ RUN pip install gunicorn
 ## Copy all src files
 COPY . .
 
+RUN python manage.py collectstatic --noinput
+
 ## Run the application on the port 8080
 EXPOSE 8000
 

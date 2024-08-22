@@ -10,54 +10,131 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="{% static 'blog/index.css' %}">
+    <style>
+        body {
+            background-color: #fafafa;
+            font-family: 'Roboto', sans-serif;
+        }
+        .navbar {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #dbdbdb;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            color: #262626;
+        }
+        .nav-link {
+            color: #262626 !important;
+        }
+        .container {
+            max-width: 935px;
+        }
+        .post-card {
+            background-color: #ffffff;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            margin-bottom: 60px;
+        }
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+        }
+        .post-header img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .username {
+            font-weight: 600;
+            color: #262626;
+        }
+        .post-image img {
+            width: 100%;
+            height: auto;
+        }
+        .post-actions {
+            padding: 8px 16px;
+        }
+        .post-actions button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #262626;
+            margin-right: 16px;
+        }
+        .post-likes {
+            padding: 0 16px;
+            font-weight: 600;
+            color: #262626;
+        }
+        .post-caption {
+            padding: 8px 16px;
+        }
+        .category-tag-container {
+            padding: 8px 16px;
+        }
+        .category-badge, .tag-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            margin-right: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            color: #262626;
+            font-size: 12px;
+            text-decoration: none;
+        }
+        .post-comments {
+            padding: 8px 16px;
+            color: #8e8e8e;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'post_list' %}">InstaBLOG</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <form class="d-flex search-form mx-auto" action="{% url 'post_search' %}" method="get">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
-                    <button class="btn" type="submit"><i class="fas fa-search"></i></button>
-                </form>
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'post_list' %}"><i class="fas fa-home"></i></a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-th"></i>
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="{% url 'category_list' %}">Categories</a></li>
-                            <li><a class="dropdown-item" href="{% url 'tag_list' %}">Tags</a></li>
-                        </ul>
-                    </li>
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'post_create' %}"><i class="fas fa-plus-square"></i></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile_view' %}"><i class="fas fa-user"></i></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt"></i></a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_login' %}"><i class="fas fa-sign-in-alt"></i></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_signup' %}"><i class="fas fa-user-plus"></i></a>
-                        </li>
-                    {% endif %}
+          <a class="navbar-brand" href="{% url 'post_list' %}">InstaBLOG</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'post_list' %}"><i class="fas fa-home"></i></a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-compass"></i>
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <li><a class="dropdown-item" href="{% url 'category_list' %}">Categories</a></li>
+                  <li><a class="dropdown-item" href="{% url 'tag_list' %}">Tags</a></li>
                 </ul>
-            </div>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'post_create' %}"><i class="fas fa-plus-square"></i></a>
+              </li>
+              {% if user.is_authenticated %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'profile_view' username=user.username %}"><i class="fas fa-user"></i></a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt"></i></a>
+                </li>
+              {% else %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'account_signup' %}">Sign Up</a>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
         </div>
-    </nav>
+      </nav>
 
     <div class="container mt-4">
         {% block content %}

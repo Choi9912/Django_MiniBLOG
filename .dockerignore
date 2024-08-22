@@ -1,0 +1,25 @@
+# .dockerignore
+
+# 환경 설정 파일
+
+# 개발 및 테스트 관련 파일
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+.pytest_cache
+
+# 버전 컨트롤
+.git
+.gitignore
+
+# 로그 파일
+*.log
+
+# 가상 환경
+venv/
+*.venv
+
+# 기타 불필요한 파일
+*.swp
+.DS_Store
