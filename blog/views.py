@@ -54,7 +54,9 @@ class ProfileView(DetailView):
 
     def get_object(self, queryset=None):
         username = self.kwargs.get("username")
-        return get_object_or_404(Profile, user__username=username)
+        user = get_object_or_404(User, username=username)
+        profile, created = Profile.objects.get_or_create(user=user)
+        return profile
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
