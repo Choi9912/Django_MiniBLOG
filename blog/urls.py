@@ -1,6 +1,13 @@
 from django.urls import path
 from . import views
-from .views import CustomLoginView, ProfileUpdateView, ProfileView
+from .views import (
+    CommentDeleteView,
+    CustomLoginView,
+    ProfileUpdateView,
+    ProfileView,
+    ReplyCreateView,
+    ReplyDeleteView,
+)
 
 urlpatterns = [
     path("", views.PostListView.as_view(), name="post_list"),
@@ -39,8 +46,12 @@ urlpatterns = [
         name="comment_like_toggle",
     ),
     path(
-        "comment/<int:comment_pk>/reply/new/",
-        views.ReplyCreateView.as_view(),
+        "comment/<int:pk>/delete/", CommentDeleteView.as_view(), name="comment_delete"
+    ),
+    path("reply/<int:pk>/delete/", ReplyDeleteView.as_view(), name="reply_delete"),
+    path(
+        "comment/<int:comment_pk>/reply/",
+        ReplyCreateView.as_view(),
         name="reply_create",
     ),
     path("categories/", views.CategoryListView.as_view(), name="category_list"),
@@ -51,9 +62,7 @@ urlpatterns = [
         name="category_posts",
     ),
     path("tag/<str:slug>/", views.TagPostListView.as_view(), name="tag_posts"),
-    path("notifications/", views.notifications, name="notifications"),
     path("follow/<int:user_id>/", views.follow_toggle, name="follow_toggle"),
-    path("bookmark/<int:post_id>/", views.bookmark_post, name="bookmark_post"),
     path("share/<int:post_id>/", views.share_post, name="share_post"),
     path("dashboard/", views.user_dashboard, name="user_dashboard"),
 ]

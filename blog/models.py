@@ -118,18 +118,7 @@ class Comment(models.Model):
         "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
     )
     likes = models.ManyToManyField(User, related_name="liked_comments", blank=True)
+    is_removed = models.BooleanField(default=False)
 
-
-class Notification(models.Model):
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="notifications"
-    )
-    content = models.CharField(max_length=255)
-    is_read = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-class Bookmark(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookmarks")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return f"Comment by {self.author.username} on {self.post.title}"

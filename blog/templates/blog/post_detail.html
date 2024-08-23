@@ -9,6 +9,8 @@
   // 전역 변수로 필요한 데이터를 설정합니다.
   var postId = {{ post.pk }};
   var sharePostUrl = "{% url 'share_post' post.pk %}";
+  var commentCreateUrl = "{% url 'comment_create' post.pk %}";
+  var csrfToken = "{{ csrf_token }}";
 </script>
 <script src="{% static 'blog/js/post_detail.js' %}"></script>
 {% endblock %}
@@ -70,29 +72,23 @@
               {% endfor %}
             </p>
           </div>
-                    
           <div class="card-footer bg-white">
             <h6 class="mb-3">Comments</h6>
-            {% for comment in post.comments.all %}
-              <div class="mb-2 comment-container">
-                <p class="mb-0"><strong>{{ comment.author }}</strong> {{ comment.content }}</p>
-                <small class="text-muted">{{ comment.created_at|date:"F d, Y" }}</small>
-              </div>
-            {% empty %}
-              <p>No comments yet.</p>
-            {% endfor %}
+            {% include 'blog/comments.html' with comments=post.comments.all %}
           </div>
-                    
+          
           {% if user.is_authenticated %}
-            <form action="{% url 'comment_create' post.pk %}" method="post" class="mt-3">
+          <div class="card-footer bg-white">
+            <form method="post" action="{% url 'comment_create' post.pk %}">
               {% csrf_token %}
               <div class="input-group">
-                <input type="text" name="content" class="form-control" placeholder="Add a comment..." required>
+                <textarea name="content" class="form-control" placeholder="Write a comment..." rows="3"></textarea>
                 <div class="input-group-append">
-                  <button type="submit" class="btn btn-outline-primary">Post</button>
+                  <button type="submit" class="btn btn-primary">Post</button>
                 </div>
               </div>
             </form>
+          </div>
           {% endif %}
         </div>
       </div>

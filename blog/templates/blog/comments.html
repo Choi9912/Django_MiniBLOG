@@ -1,0 +1,51 @@
+{% for comment in comments %}
+    {% if not comment.parent_comment %}
+        <div id="comment-{{ comment.id }}" class="comment mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <strong>{{ comment.author }}</strong>
+                <small>{{ comment.created_at|date:"F d, Y H:i" }}</small>
+            </div>
+            {% if comment.is_removed %}
+                <p class="text-muted"><em>이 댓글은 삭제되었습니다.</em></p>
+            {% else %}
+                <p>{{ comment.content }}</p>
+                <div class="comment-actions">
+                    <button class="btn btn-sm btn-outline-primary like-button" data-comment-id="{{ comment.id }}">
+                        <i class="fas fa-heart"></i> <span class="like-count">{{ comment.likes.count }}</span>
+                    </button>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'reply_create' comment.pk %}" class="btn btn-sm btn-outline-secondary">Reply</a>
+                        {% if user == comment.author %}
+                            <a href="{% url 'comment_update' comment.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a href="{% url 'comment_delete' comment.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+            
+            {% if comment.replies.all %}
+                <div class="replies ml-4 mt-3">
+                    <h6>Replies:</h6>
+                    {% for reply in comment.replies.all %}
+                        <div id="reply-{{ reply.id }}" class="reply mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong>{{ reply.author }}</strong>
+                                <small>{{ reply.created_at|date:"F d, Y H:i" }}</small>
+                            </div>
+                            <p>{{ reply.content }}</p>
+                            <div class="reply-actions">
+                                <button class="btn btn-sm btn-outline-primary like-button" data-comment-id="{{ reply.id }}">
+                                    <i class="fas fa-heart"></i> <span class="like-count">{{ reply.likes.count }}</span>
+                                </button>
+                                {% if user == reply.author %}
+                                    <a href="{% url 'comment_update' reply.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <a href="{% url 'reply_delete' reply.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endfor %}

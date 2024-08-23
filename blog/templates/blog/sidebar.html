@@ -1,12 +1,20 @@
+{% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'blog/css/sidebar.css' %}">
+<script src="{% static 'blog/js/sidebar.js' %}"></script>
+{% endblock %}
+
 <div class="popular-blogs">
     <h3>Top 5 Blogs</h3>
     {% for post in popular_posts %}
-        <div class="popular-blog-item">
-            {% if post.author.profile.profile_picture %}
-                <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author }}">
-            {% else %}
-                <div class="profile-placeholder"></div>
-            {% endif %}
+        <div class="popular-blog-item" data-id="{{ post.pk }}">
+            <div class="profile-picture-container">
+                {% if post.author.profile.profile_picture %}
+                    <img class="profile-picture" src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author }}">
+                {% else %}
+                    <div class="profile-placeholder"></div>
+                {% endif %}
+            </div>
             <div class="popular-blog-info">
                 <a href="{% url 'post_detail' post.pk %}" title="{{ post.title }}">{{ post.title|truncatechars:20 }}</a>
                 <p></p>

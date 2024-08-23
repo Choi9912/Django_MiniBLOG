@@ -22,13 +22,13 @@
     <div class="col-md-10 col-lg-8">
       <div class="card border-0 shadow-sm">
         <div class="card-body p-4">
-          <h2 class="mb-4 text-center">{% if form.instance.pk %}Edit Post{% else %}New Post{% endif %}</h2>
+          <h2 class="mb-4 text-center">{% if form.instance.pk %}블로그 수정{% else %}블로그 생성{% endif %}</h2>
           
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
             <div class="mb-4">
-              <label for="{{ form.title.id_for_label }}">Title</label>
+              <label for="{{ form.title.id_for_label }}">제목</label>
               {% render_field form.title class="form-control" placeholder="Enter your post title" %}
             </div>
             
@@ -38,7 +38,7 @@
             </div>
             
             <div class="mb-4">
-              <label for="{{ form.content.id_for_label }}">Content</label>
+              <label for="{{ form.content.id_for_label }}">본문</label>
               {{ form.content }}
             </div>
             
@@ -48,13 +48,8 @@
             </div>
             
             <div class="mb-4">
-              <label for="{{ form.head_image.id_for_label }}">Header Image</label>
+              <label for="{{ form.head_image.id_for_label }}">썸네일</label>
               {% render_field form.head_image class="form-control" %}
-            </div>
-            
-            <div class="mb-4">
-              <label for="{{ form.file_upload.id_for_label }}">Attach File</label>
-              {% render_field form.file_upload class="form-control" %}
             </div>
             
             {% if form.birthday %}

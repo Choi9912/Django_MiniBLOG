@@ -328,44 +328,108 @@ class PostLikeToggleView(LoginRequiredMixin, View):
         return JsonResponse({"likes_count": post.likes.count(), "liked": liked})
 
 
-class CommentLikeToggleView(LoginRequiredMixin, DetailView):
-    model = Comment
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import CreateView, DeleteView
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.http import JsonResponse
 
+from .models import Comment
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class CommentLikeToggleView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        comment = self.get_object()
-        if request.user in comment.likes.all():
-            comment.likes.remove(request.user)
+        comment = get_object_or_404(Comment, pk=kwargs["pk"])
+        user = request.user
+
+        if user in comment.likes.all():
+            comment.likes.remove(user)
+            liked = False
         else:
-            comment.likes.add(request.user)
-        return redirect("post_detail", pk=comment.post.pk)
+            comment.likes.add(user)
+            liked = True
+
+        return JsonResponse({"likes_count": comment.likes.count(), "liked": liked})
 
 
 class ReplyCreateView(LoginRequiredMixin, CreateView):
     model = Comment
-    template_name = "blog/reply_form.html"
     fields = ["content"]
+    template_name = "blog/reply_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.parent_comment = get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
+        if self.parent_comment.parent_comment:
+            messages.error(self.request, "답글에는 답글을 달 수 없습니다.")
+            return redirect("post_detail", pk=self.parent_comment.post.pk)
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        parent_comment = get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
         form.instance.author = self.request.user
-        form.instance.post = parent_comment.post
-        form.instance.parent_comment = parent_comment
+        form.instance.post = self.parent_comment.post
+        form.instance.parent_comment = self.parent_comment
         return super().form_valid(form)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        parent_comment = get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
-        context["parent_comment"] = parent_comment
-        return context
 
     def get_success_url(self):
         return reverse("post_detail", kwargs={"pk": self.object.post.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["parent_comment"] = self.parent_comment
+        return context
+
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+    template_name = "blog/comment_confirm_delete.html"
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
+
+    def get_success_url(self):
+        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        if self.object.replies.exists():
+            self.object.content = "이 댓글은 삭제되었습니다."
+            self.object.is_removed = True
+            self.object.save()
+        else:
+            self.object.delete()
+        return redirect(success_url)
+
+
+class ReplyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
+    template_name = "blog/comment_confirm_delete.html"
+
+    def test_func(self):
+        comment = self.get_object()
+        return (
+            self.request.user == comment.author and comment.parent_comment is not None
+        )
+
+    def get_success_url(self):
+        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        self.object.delete()
+        return redirect(success_url)
 
 
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from .models import Notification, Bookmark
 
 
 @login_required
@@ -393,14 +457,6 @@ def follow_toggle(request, user_id):
             "follower_count": user_to_follow.profile.followers.count(),
         }
     )
-
-
-@login_required
-@require_POST
-def bookmark_post(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    bookmark, created = Bookmark.objects.get_or_create(user=request.user, post=post)
-    return JsonResponse({"bookmarked": created})
 
 
 def share_post(request, post_id):

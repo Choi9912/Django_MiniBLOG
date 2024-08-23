@@ -1,0 +1,8 @@
+<div class="mb-2 comment-container" data-comment-id="{{ comment.id }}">
+    <p class="mb-0"><strong>{{ comment.author }}</strong> {{ comment.content }}</p>
+    <small class="text-muted">{{ comment.created_at|date:"F d, Y" }}</small>
+    {% if user.is_authenticated %}
+      <button class="btn btn-sm btn-link reply-btn">Reply</button>
+    {% endif %}
+    <div class="replies-container"></div>
+  </div>

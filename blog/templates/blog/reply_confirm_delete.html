@@ -1,0 +1,19 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}댓글 삭제 확인{% endblock %}
+
+{% block content %}
+    <h2 class="mb-4">댓글 삭제 확인</h2>
+    <p>다음 댓글을 정말 삭제하시겠습니까?</p>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h6 class="card-subtitle mb-2 text-muted">{{ comment.author }} | {{ comment.created_at|date:"Y-m-d H:i" }}</h6>
+            <p class="card-text">{{ comment.content }}</p>
+        </div>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">삭제</button>
+        <a href="{% url 'post_detail' comment.post.pk %}" class="btn btn-secondary">취소</a>
+    </form>
+{% endblock %}
