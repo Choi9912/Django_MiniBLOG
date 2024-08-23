@@ -9,11 +9,24 @@ services:
              gunicorn --bind 0.0.0.0:8000 blog_project.wsgi:application"
     volumes:
       - .:/usr/src/app
-      - static_volume:/usr/src/app/staticfiles
-    ports:
-      - "8000:8000"
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
+    expose:
+      - "8000"
     env_file:
       - .env
 
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
+    depends_on:
+      - web
+
 volumes:
   static_volume:
+  media_volume:

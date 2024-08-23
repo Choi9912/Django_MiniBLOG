@@ -1,0 +1,16 @@
+.card {
+    transition: transform 0.3s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.card-body {
+    padding: 1.5rem;
+}
+.card-title {
+    font-weight: 600;
+    color: #262626;
+}
+.card-text {
+    font-size: 0.9rem;
+}

@@ -1,0 +1,33 @@
+body {
+  background-color: #fafafa;
+}
+.form-control:focus, .form-select:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0,149,246,0.25);
+  border-color: #0095f6;
+}
+.custom-file-upload input[type="file"] {
+  display: none;
+}
+.custom-file-upload label {
+  cursor: pointer;
+  padding: 8px 12px;
+  background-color: transparent;
+  border: 1px solid #dbdbdb;
+  color: #0095f6;
+  transition: all 0.3s;
+}
+.custom-file-upload label:hover {
+  background-color: rgba(0,149,246,0.1);
+}
+.btn-primary {
+  background-color: #0095f6;
+  border-color: #0095f6;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background-color: #0086e0;
+  border-color: #0086e0;
+}
+.select2-container .select2-selection--multiple {
+  min-height: 38px;
+}

@@ -62,17 +62,13 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Recent Activity</h5>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">New follower: John Doe</li>
-                        <li class="list-group-item">Your post "Django Tips" received 10 new likes</li>
-                        <li class="list-group-item">3 new comments on your posts</li>
-                    </ul>
-                </div>
-            </div>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Views Over Time</h5>
+            <canvas id="viewsOverTimeChart"></canvas>
         </div>
+    </div>
+</div>
     </div>
 </div>
 
@@ -84,7 +80,11 @@
             data: {
                 labels: ['Views', 'Likes', 'Followers'],
                 datasets: [{
-                    data: [{{ total_views }}, {{ total_likes }}, {{ follower_count }}],
+                    data: [
+                        {{ total_views|safe }},
+                        {{ total_likes|safe }},
+                        {{ follower_count|safe }}
+                    ],
                     backgroundColor: [
                         'rgba(75, 192, 192, 0.8)',
                         'rgba(255, 99, 132, 0.8)',
@@ -113,4 +113,5 @@
         });
     });
 </script>
+
 {% endblock %}
