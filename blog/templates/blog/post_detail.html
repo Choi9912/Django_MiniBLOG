@@ -47,10 +47,14 @@
               {{ content|safe }}
             </div>
             <div class="post-actions mt-4 mb-3">
-              {% csrf_token %}
-              <button class="btn btn-sm btn-outline-primary like-btn {% if user in post.likes.all %}liked{% endif %}" data-post-id="{{ post.pk }}">
-                <i class="{% if user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i> <span class="like-count">{{ post.likes.count }}</span>
-              </button>
+              <form class="like-form" action="{% url 'post_like_toggle' post.id %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-primary like-btn {% if user in post.likes.all %}liked{% endif %}" data-post-id="{{ post.pk }}">
+                    <i class="{% if user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                    <span class="like-count">{{ post.likes.count }}</span>
+                </button>
+            </form>
+
               <button class="btn btn-sm btn-outline-info share-btn" data-post-id="{{ post.pk }}">
                 <i class="fas fa-share"></i> Share
               </button>
@@ -73,23 +77,23 @@
             </p>
           </div>
           <div class="card-footer bg-white">
-            <h6 class="mb-3">Comments</h6>
-            {% include 'blog/comments.html' with comments=post.comments.all %}
-          </div>
-          
-          {% if user.is_authenticated %}
-          <div class="card-footer bg-white">
-            <form method="post" action="{% url 'comment_create' post.pk %}">
-              {% csrf_token %}
-              <div class="input-group">
-                <textarea name="content" class="form-control" placeholder="Write a comment..." rows="3"></textarea>
-                <div class="input-group-append">
-                  <button type="submit" class="btn btn-primary">Post</button>
-                </div>
-              </div>
-            </form>
-          </div>
-          {% endif %}
+             <h6 class="mb-3">Comments</h6>
+             {% include 'blog/comments.html' with comments=post.comments.all %}
+           </div>
+           
+           {% if user.is_authenticated %}
+           <div class="card-footer bg-white">
+             <form method="post" action="{% url 'comment_create' post.pk %}">
+               {% csrf_token %}
+               <div class="input-group">
+                 <textarea name="content" class="form-control" placeholder="Write a comment..." rows="3"></textarea>
+                 <div class="input-group-append">
+                   <button type="submit" class="btn btn-primary">Post</button>
+                 </div>
+               </div>
+             </form>
+           </div>
+           {% endif %}
         </div>
       </div>
     </div>

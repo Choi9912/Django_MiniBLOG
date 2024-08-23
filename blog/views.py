@@ -308,12 +308,14 @@ class TagDetailView(DetailView):
         return context
 
 
+from django.views.decorators.http import require_POST
+
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
 
-@method_decorator(csrf_exempt, name="dispatch")
 class PostLikeToggleView(LoginRequiredMixin, View):
+    @method_decorator(require_POST)
     def post(self, request, *args, **kwargs):
         post = get_object_or_404(Post, pk=kwargs["pk"])
         user = request.user
