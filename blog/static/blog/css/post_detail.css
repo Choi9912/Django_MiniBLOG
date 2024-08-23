@@ -1,0 +1,37 @@
+.card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+.card-header {
+  border-bottom: 1px solid #efefef;
+}
+.btn-link {
+  color: #262626;
+}
+.like-btn.liked {
+  background-color: #007bff;
+  color: white;
+}
+.btn-link:hover {
+  color: #262626;
+  text-decoration: none;
+}
+.far.fa-heart:hover, .fas.fa-heart {
+  color: #ed4956;
+}
+.blog-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 20px 0;
+}
+.blog-content {
+  font-size: 18px;
+  line-height: 1.6;
+}
+.sentiment-btn {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+.sentiment-result {
+  font-size: 0.9rem;
+}

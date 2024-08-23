@@ -1,83 +1,61 @@
 {% extends "blog/base.html" %}
 {% load i18n %}
 {% load static %}
-
+{% block head %}
+<link rel="stylesheet" href="{% static 'accounts/css/profile.css' %}">
+{% endblock %}
 {% block content %}
-<div class="post-card">
-    <div class="post-header d-flex align-items-center">
-        {% if profile.profile_picture %}
-            <img src="{{ profile.profile_picture.url }}" alt="{{ user.username }}" style="width: 64px; height: 64px; border-radius: 50%;">
-        {% else %}
-            <img src="https://via.placeholder.com/64" alt="{{ user.username }}" style="width: 64px; height: 64px; border-radius: 50%;">
-        {% endif %}
-        <h2 id="user.username" class="ms-3">{{ user.username }}</h2>
-    </div>
-
-    <div class="post-caption">
-        <p><strong>{% trans "Email" %}:</strong> {{ user.email }}</p>
-        <p><strong>{% trans "Bio" %}:</strong> {{ profile.bio }}</p>
-        <p><strong>{% trans "Location" %}:</strong> {{ profile.location }}</p>
-        <p><strong>{% trans "Birth Date" %}:</strong> {{ profile.birth_date }}</p>
-    </div>
-
-    {% if is_own_profile %}
-    <div class="post-actions">
-        <a href="{% url 'profile_update' %}" class="btn btn-primary">{% trans "Update Profile" %}</a>
-    </div>
-    {% endif %}
-</div>
-
-<h3 id="trans-my-posts" class="mt-4">{% trans "My Posts" %}</h3>
-
-<div class="post-grid">
-    {% for post in user_posts %}
-    <div class="post">
-        <div class="post-image">
-            <a href="{% url 'post_detail' post.pk %}">
-                {% if post.head_image %}
-                    <img src="{{ post.head_image.url }}" alt="{{ post.title }}">
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-image-container">
+            {% if profile.profile_picture %}
+                <img src="{{ profile.profile_picture.url }}" alt="{{ user.username }}" class="profile-picture">
+            {% else %}
+                <img src="https://via.placeholder.com/150" alt="{{ user.username }}" class="profile-picture">
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h2 class="username">{{ user.username }}</h2>
+            <div class="profile-stats">
+                <span><strong>{{ user_posts.count }}</strong> 게시물</span>
+                <span><strong>{{ profile.followers.count }}</strong> 팔로워</span>
+                <span><strong>{{ profile.following.count }}</strong> 팔로우</span>
+            </div>
+            <div class="profile-actions">
+                {% if is_own_profile %}
+                    <a href="{% url 'profile_update' %}" class="btn btn-outline-secondary">프로필 편집</a>
+                    <a href="{% url 'user_dashboard' %}" class="btn btn-outline-info">대시보드 보기</a>
                 {% else %}
-                    <img src="https://via.placeholder.com/300x200" alt="No Image">
+                    <button class="btn btn-primary follow-btn" data-user-id="{{ user.id }}">
+                        {% if request.user in profile.followers.all %}팔로우 취소{% else %}팔로우{% endif %}
+                    </button>
                 {% endif %}
-            </a>
-        </div>
-        <div class="post-title">
-            <h4>{{ post.title }}</h4>
-        </div>
-        <div class="post-actions">
-            <span>{{ post.likes.count }} likes</span>
-            <span>{{ post.comments.count }} comments</span>
+            </div>
         </div>
     </div>
-    {% empty %}
-    <p>{% trans "No posts yet." %}</p>
-    {% endfor %}
+    
+    <div class="profile-bio">
+        <p><strong>{{ profile.bio }}</strong></p>
+        <p>{{ profile.location }}</p>
+    </div>
+
+    <div class="profile-posts">
+        <h3 class="section-title">게시물</h3>
+        <div class="post-grid">
+            {% for post in user_posts %}
+                <div class="post">
+                    <a href="{% url 'post_detail' post.pk %}">
+                        {% if post.head_image %}
+                            <img src="{{ post.head_image.url }}" alt="{{ post.title }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x300" alt="No Image">
+                        {% endif %}
+                    </a>
+                </div>
+            {% empty %}
+                <p class="no-posts">{% trans "No posts yet." %}</p>
+            {% endfor %}
+        </div>
+    </div>
 </div>
-<style>
-    .post-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
-    }
-    .post {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    .post-image img {
-        width: 100%;
-        height: 150px;
-        object-fit: cover;
-    }
-    .post-title {
-        padding: 10px;
-    }
-    .post-actions {
-        padding: 10px;
-        display: flex;
-        justify-content: space-between;
-        background-color: #f8f9fa;
-    }
-</style>
 {% endblock %}

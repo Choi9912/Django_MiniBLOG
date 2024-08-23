@@ -3,6 +3,10 @@
 
 {% block title %}Categories{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="{% static 'blog/css/category_list.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4 text-center">Categories</h2>
@@ -25,25 +29,4 @@
         {% endfor %}
     </div>
 </div>
-
-
-
-<style>
-    .card {
-        transition: transform 0.3s ease-in-out;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-    }
-    .card-body {
-        padding: 1.5rem;
-    }
-    .card-title {
-        font-weight: 600;
-        color: #262626;
-    }
-    .card-text {
-        font-size: 0.9rem;
-    }
-</style>
 {% endblock %}

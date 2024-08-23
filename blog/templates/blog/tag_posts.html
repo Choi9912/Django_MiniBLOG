@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}{{ tag.name }} - Posts{% endblock %}
-<link rel="stylesheet" href="{% static 'blog/category_post.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/pag_posts.css' %}">
 
 {% block content %}
 <div class="container mt-4">
@@ -45,107 +45,4 @@
     </div>
 </div>
 
-<style>
- /* category_post.css */
-
-body {
-    background-color: #f9f9f9;
-}
-
-.container {
-    max-width: 1200px;
-}
-
-.card {
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-}
-
-.card-img-top {
-    border-radius: 0;
-    height: 180px;
-    object-fit: cover;
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
-.card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-}
-
-.card-text {
-    font-size: 0.875rem;
-    color: #666;
-}
-
-.btn-outline-primary {
-    border-color: #007bff;
-    color: #007bff;
-    border-radius: 50px;
-    padding: 0.5rem 1rem;
-    transition: color 0.3s ease, border-color 0.3s ease;
-}
-
-.btn-outline-primary:hover {
-    color: #fff;
-    background-color: #007bff;
-    border-color: #007bff;
-}
-
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem;
-    transition: background-color 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-
-.btn-outline-secondary {
-    border-color: #6c757d;
-    color: #6c757d;
-    border-radius: 50px;
-    padding: 0.5rem 1.5rem;
-    transition: color 0.3s ease, border-color 0.3s ease;
-}
-
-.btn-outline-secondary:hover {
-    color: #343a40;
-    border-color: #343a40;
-}
-
-.pagination {
-    font-size: 0.875rem;
-}
-
-.page-item.active .page-link {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: #fff;
-}
-
-.page-link {
-    border-radius: 50px;
-    padding: 0.5rem 1rem;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.page-link:hover {
-    background-color: #f1f1f1;
-}
-   
-</style>
 {% endblock %}

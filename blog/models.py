@@ -12,15 +12,23 @@ from django.utils.text import slugify
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True, null=True)
-    profile_picture = models.ImageField(
-        upload_to="profile_photos/", blank=True, null=True
-    )
-    birth_date = models.DateField(blank=True, null=True)
-    location = models.CharField(max_length=100, blank=True, null=True)
+    bio = models.TextField(max_length=500, blank=True)
+    location = models.CharField(max_length=30, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to="profile_pics", blank=True)
+    followers = models.ManyToManyField(User, related_name="following", blank=True)
 
     def __str__(self):
         return self.user.username
+
+    def follow(self, user):
+        return self.followers.add(user)
+
+    def unfollow(self, user):
+        return self.followers.remove(user)
+
+    def is_following(self, user):
+        return self.followers.filter(id=user.id).exists()
 
 
 class Category(models.Model):
@@ -83,6 +91,19 @@ class Post(models.Model):
     birthday = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=100, blank=True)
 
+    def calculate_popularity(self):
+        # 조회수, 좋아요, 댓글 수에 가중치를 적용
+        view_weight = 1
+        like_weight = 3
+        comment_weight = 2
+
+        popularity = (
+            self.view_count * view_weight
+            + self.likes.count() * like_weight
+            + self.comments.count() * comment_weight
+        )
+        return popularity
+
     def __str__(self):
         return self.title
 
@@ -97,3 +118,18 @@ class Comment(models.Model):
         "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
     )
     likes = models.ManyToManyField(User, related_name="liked_comments", blank=True)
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notifications"
+    )
+    content = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Bookmark(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookmarks")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -5,16 +5,47 @@ from django_summernote.widgets import SummernoteWidget
 
 
 class ProfileForm(forms.ModelForm):
+    username = forms.CharField(max_length=150)
+
     class Meta:
         model = Profile
         fields = ["bio", "profile_picture", "birth_date", "location"]
 
-    birth_date = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
-    location = forms.CharField(max_length=100, required=False)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.user:
+            self.fields["username"].initial = self.instance.user.username
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        user = profile.user
+        user.username = self.cleaned_data["username"]
+        if commit:
+            user.save()
+            profile.save()
+        return profile
 
 
 class CustomPostForm(forms.ModelForm):
-    content = forms.CharField(widget=SummernoteWidget())
+    content = forms.CharField(
+        widget=SummernoteWidget(
+            attrs={
+                "summernote": {
+                    "width": "100%",
+                    "height": "400px",
+                    "toolbar": [
+                        ["style", ["style"]],
+                        ["font", ["bold", "underline", "clear"]],
+                        ["color", ["color"]],
+                        ["para", ["ul", "ol", "paragraph"]],
+                        ["table", ["table"]],
+                        ["insert", ["link", "picture", "video"]],
+                        ["view", ["fullscreen", "codeview", "help"]],
+                    ],
+                }
+            }
+        )
+    )
     tags = forms.CharField(
         required=False,
         widget=forms.TextInput(

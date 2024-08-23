@@ -4,9 +4,9 @@ from .views import CustomLoginView, ProfileUpdateView, ProfileView
 
 urlpatterns = [
     path("", views.PostListView.as_view(), name="post_list"),
+    path("profile/update/", views.ProfileUpdateView.as_view(), name="profile_update"),
     path("profile/", views.ProfileView.as_view(), name="profile_view"),
     path("profile/<str:username>/", ProfileView.as_view(), name="profile_view"),
-    path("profile/update/", views.ProfileUpdateView.as_view(), name="profile_update"),
     path("post/<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
     path("post/new/", views.PostCreateView.as_view(), name="post_create"),
     path("post/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post_update"),
@@ -51,4 +51,9 @@ urlpatterns = [
         name="category_posts",
     ),
     path("tag/<str:slug>/", views.TagPostListView.as_view(), name="tag_posts"),
+    path("notifications/", views.notifications, name="notifications"),
+    path("follow/<int:user_id>/", views.follow_toggle, name="follow_toggle"),
+    path("bookmark/<int:post_id>/", views.bookmark_post, name="bookmark_post"),
+    path("share/<int:post_id>/", views.share_post, name="share_post"),
+    path("dashboard/", views.user_dashboard, name="user_dashboard"),
 ]

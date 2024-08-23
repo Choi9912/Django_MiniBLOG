@@ -3,7 +3,11 @@
 {% load static %}
 
 {% block title %}{% if form.instance.pk %}Edit Post{% else %}New Post{% endif %}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'blog/css/post_form.css' %}">
+<script src="{% static 'blog/js/post_form.js' %}"></script>
 
+{% endblock %}
 {% block extra_head %}
   {{ form.media }}
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -79,50 +83,4 @@
   </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Select2 initialization for tags
-    $('#{{ form.tags.id_for_label }}').select2({
-        tags: true,
-        tokenSeparators: [',', ' '],
-        placeholder: "Enter tags",
-    });
-});
-</script>
-
-<style>
-body {
-    background-color: #fafafa;
-}
-.form-control:focus, .form-select:focus {
-    box-shadow: 0 0 0 0.2rem rgba(0,149,246,0.25);
-    border-color: #0095f6;
-}
-.custom-file-upload input[type="file"] {
-    display: none;
-}
-.custom-file-upload label {
-    cursor: pointer;
-    padding: 8px 12px;
-    background-color: transparent;
-    border: 1px solid #dbdbdb;
-    color: #0095f6;
-    transition: all 0.3s;
-}
-.custom-file-upload label:hover {
-    background-color: rgba(0,149,246,0.1);
-}
-.btn-primary {
-    background-color: #0095f6;
-    border-color: #0095f6;
-    font-weight: 600;
-}
-.btn-primary:hover {
-    background-color: #0086e0;
-    border-color: #0086e0;
-}
-.select2-container .select2-selection--multiple {
-    min-height: 38px;
-}
-</style>
 {% endblock %}

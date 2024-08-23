@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Notifications</h2>
+  <ul>
+    {% for notification in notifications %}
+      <li {% if not notification.is_read %}class="unread"{% endif %}>
+        {{ notification.content }}
+        <small>{{ notification.created_at|timesince }} ago</small>
+      </li>
+    {% empty %}
+      <li>No notifications yet.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

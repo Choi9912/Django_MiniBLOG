@@ -11,13 +11,13 @@ from django.views.generic import (
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q
 from allauth.account.views import LoginView
 
 from blog.forms import CustomPostForm, ProfileForm
 from .models import Post, Comment, Category, Tag, Profile
-from django.db.models import Count
+from django.db.models import Count, F, ExpressionWrapper, fields
 import markdown2
 
 
@@ -32,16 +32,25 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Profile
     form_class = ProfileForm
     template_name = "accounts/profile_update.html"
-    success_url = reverse_lazy("profile_view")
 
     def get_object(self, queryset=None):
         return self.request.user.profile
 
+    def get_success_url(self):
+        return reverse("profile_view", kwargs={"username": self.request.user.username})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["user_posts"] = Post.objects.filter(author=user).order_by("-created_at")
+        context["is_own_profile"] = True
+        return context
+
     def form_valid(self, form):
-        # Print or log form errors if needed
-        if not form.is_valid():
-            print(form.errors)
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        self.request.user.username = form.cleaned_data["username"]
+        self.request.user.save()
+        return response
 
 
 from django.contrib.auth.models import User
@@ -62,9 +71,28 @@ class ProfileView(DetailView):
         context = super().get_context_data(**kwargs)
         user = self.object.user
         context["user_posts"] = Post.objects.filter(author=user).order_by("-created_at")
-        context["is_own_profile"] = (
-            self.request.user.is_authenticated and self.request.user == user
-        )
+        context["is_own_profile"] = self.request.user == user
+
+        if self.request.user.is_authenticated and not context["is_own_profile"]:
+            context["is_following"] = self.request.user.profile.followers.filter(
+                id=user.id
+            ).exists()
+        else:
+            context["is_following"] = False
+
+        return context
+
+
+class PopularPostsMixin:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        popular_posts = Post.objects.annotate(
+            popularity=ExpressionWrapper(
+                F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
+                output_field=fields.IntegerField(),
+            )
+        ).order_by("-popularity")[:5]
+        context["popular_posts"] = popular_posts
         return context
 
 
@@ -95,10 +123,24 @@ class PostListView(ListView):
         context["categories"] = Category.objects.all()
         context["tags"] = Tag.objects.all()
         context["current_sort"] = self.request.GET.get("sort", "latest")
+
+        # 인기 있는 상위 5개 포스트 가져오기
+        popular_posts = Post.objects.annotate(
+            popularity=ExpressionWrapper(
+                F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
+                output_field=fields.IntegerField(),
+            )
+        ).order_by("-popularity")[:5]
+
+        context["popular_posts"] = popular_posts
+
+        # 메인 페이지에서만 사이드바 표시
+        context["show_sidebar"] = True
+
         return context
 
 
-class PostDetailView(DetailView):
+class PostDetailView(PopularPostsMixin, DetailView):
     model = Post
     template_name = "blog/post_detail.html"
 
@@ -318,3 +360,74 @@ class ReplyCreateView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse("post_detail", kwargs={"pk": self.object.post.pk})
+
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from .models import Notification, Bookmark
+
+
+@login_required
+def notifications(request):
+    notifications = request.user.notifications.order_by("-created_at")
+    return render(request, "blog/notifications.html", {"notifications": notifications})
+
+
+@login_required
+@require_POST
+def follow_toggle(request, user_id):
+    user_to_follow = get_object_or_404(User, id=user_id)
+    profile = request.user.profile
+
+    if profile.is_following(user_to_follow):
+        profile.unfollow(user_to_follow)
+        is_following = False
+    else:
+        profile.follow(user_to_follow)
+        is_following = True
+
+    return JsonResponse(
+        {
+            "is_following": is_following,
+            "follower_count": user_to_follow.profile.followers.count(),
+        }
+    )
+
+
+@login_required
+@require_POST
+def bookmark_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    bookmark, created = Bookmark.objects.get_or_create(user=request.user, post=post)
+    return JsonResponse({"bookmarked": created})
+
+
+def share_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    return render(request, "blog/share_post.html", {"post": post})
+
+
+from django.db.models import Count, Sum  # Sum을 추가로 임포트
+
+
+@login_required
+def user_dashboard(request):
+    user_posts = Post.objects.filter(author=request.user)
+    post_count = user_posts.count()
+    total_views = user_posts.aggregate(total_views=Sum("view_count"))["total_views"]
+    total_likes = user_posts.annotate(like_count=Count("likes")).aggregate(
+        total_likes=Sum("like_count")
+    )["total_likes"]
+    follower_count = request.user.profile.followers.count()
+
+    return render(
+        request,
+        "blog/user_dashboard.html",
+        {
+            "post_count": post_count,
+            "total_views": total_views,
+            "total_likes": total_likes,
+            "follower_count": follower_count,
+        },
+    )

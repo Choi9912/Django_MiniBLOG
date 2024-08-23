@@ -1,0 +1,23 @@
+<div class="popular-blogs">
+    <h3>Top 5 Blogs</h3>
+    {% for post in popular_posts %}
+        <div class="popular-blog-item">
+            {% if post.author.profile.profile_picture %}
+                <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author }}">
+            {% else %}
+                <div class="profile-placeholder"></div>
+            {% endif %}
+            <div class="popular-blog-info">
+                <a href="{% url 'post_detail' post.pk %}" title="{{ post.title }}">{{ post.title|truncatechars:20 }}</a>
+                <p></p>
+                <small>
+                    <i class="fas fa-eye"></i> {{ post.view_count }}
+                    <i class="fas fa-heart"></i> {{ post.likes.count }}
+                    <i class="fas fa-comment"></i> {{ post.comments.count }}
+                </small>
+            </div>
+        </div>
+    {% empty %}
+        <p>No popular posts yet.</p>
+    {% endfor %}
+</div>

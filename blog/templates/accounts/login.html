@@ -3,7 +3,10 @@
 {% load account socialaccount %}
 
 {% block head_title %}{% trans "로그인" %}{% endblock %}
-
+{% block head %}
+<link rel="stylesheet" href="{% static 'accounts/css/login.css' %}">
+<script src="{% static 'accounts/js/login.js' %}"></script>
+{% endblock %}
 {% block content %}
 <div class="container mt-5">
   <div class="row justify-content-center">

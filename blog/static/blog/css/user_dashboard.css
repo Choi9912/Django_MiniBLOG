@@ -1,0 +1,7 @@
+
+.dashboard-card {
+        transition: transform 0.3s;
+    }
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+    }

@@ -1,0 +1,268 @@
+.sort-options {
+    margin-bottom: 20px;
+}
+.sort-options a {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+}
+.sort-options a.active {
+    background-color: #007bff;
+    color: white;
+}
+.post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+.post {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.post-header {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+.avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+.username {
+    font-weight: bold;
+}
+.profile-link {
+display: flex;
+align-items: center;
+text-decoration: none;
+color: inherit;
+}
+
+.profile-link:hover {
+text-decoration: underline;
+}
+.post-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+.post-title {
+    padding: 10px;
+}
+.post-actions {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+.heart-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+}
+.post-caption {
+    padding: 10px;
+}
+.tags {
+    margin-top: 10px;
+}
+.tag-link {
+    display: inline-block;
+    margin-right: 5px;
+    padding: 2px 5px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    font-size: 0.8em;
+    color: #333;
+    text-decoration: none;
+}
+.pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+.tags {
+margin-top: 10px;
+}
+
+.tags-list {
+list-style: none;
+padding: 0;
+margin: 0;
+}
+
+.tag-item {
+display: inline-block;
+margin-right: 10px;
+margin-bottom: 5px;
+}
+
+.tag-link {
+background-color: #f0f0f0;
+color: #333;
+padding: 5px 10px;
+border-radius: 20px;
+text-decoration: none;
+font-size: 0.9rem;
+}
+
+.tag-link:hover {
+background-color: #007bff;
+color: white;
+}
+
+.tag-item::after {
+content: ',';
+}
+
+.tag-item:last-child::after {
+content: '';
+}
+.post-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 20px;
+max-width: 1200px;
+margin: 0 auto;
+padding: 20px;
+}
+.post {
+border: 1px solid #dbdbdb;
+border-radius: 3px;
+background-color: #fff;
+overflow: hidden;
+}
+.post-header {
+display: flex;
+align-items: center;
+padding: 8px;
+}
+.avatar {
+width: 24px;
+height: 24px;
+border-radius: 50%;
+margin-right: 8px;
+}
+.username {
+font-weight: 600;
+font-size: 12px;
+}
+.resized-post-image {
+width: 100%;
+height: 250px;
+object-fit: cover;
+}
+.post-actions {
+display: flex;
+align-items: center;
+padding: 8px;
+}
+.like-form {
+margin-right: 8px;
+}
+.like-button {
+background: none;
+border: none;
+cursor: pointer;
+padding: 0;
+}
+.heart-icon {
+fill: none;
+stroke: #262626;
+stroke-width: 2;
+transition: all 0.2s ease;
+}
+.heart-full {
+fill: none;
+transition: fill 0.2s ease;
+}
+
+.like-button.liked .heart-full {
+fill: #ed4956;
+}
+.like-button.liked .heart-icon {
+stroke: #ed4956;
+}
+.likes-count {
+font-weight: 600;
+color: #262626;
+font-size: 12px;
+}
+.post-caption {
+padding: 0 8px 8px;
+font-size: 12px;
+}
+.pagination {
+text-align: center;
+margin-top: 20px;
+margin-bottom: 20px;
+}
+.pagination a {
+color: #0095f6;
+padding: 8px 16px;
+text-decoration: none;
+}
+.pagination .current {
+font-weight: bold;
+}
+.sidebar {
+    width: 25%;
+    background-color: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    padding: 15px;
+    margin-top: 20px;
+}
+.popular-blogs {
+    margin-top: 15px;
+}
+.popular-blog-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.popular-blog-item img,
+.profile-placeholder {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 50%;
+}
+.profile-placeholder {
+    background-color: #e0e0e0;
+}
+.popular-blog-info {
+    flex-grow: 1;
+}
+.popular-blog-info a {
+    font-weight: bold;
+    color: #262626;
+    text-decoration: none;
+}
+.popular-blog-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #8e8e8e;
+}
+.popular-blog-info small {
+    font-size: 12px;
+    color: #8e8e8e;
+}
+.popular-blog-info small i {
+    margin-right: 5px;
+}
+
+@media (max-width: 900px) {
+.post-grid {
+    grid-template-columns: repeat(2, 1fr);
+}
+}
+@media (max-width: 600px) {
+.post-grid {
+    grid-template-columns: 1fr;
+}
+}

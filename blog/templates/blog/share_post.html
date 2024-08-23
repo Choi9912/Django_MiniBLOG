@@ -1,0 +1,17 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Share: {{ post.title }}</h2>
+    <p>Share this post on:</p>
+    <div class="share-buttons">
+        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ post.title }}" target="_blank" class="btn btn-primary">Twitter</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="btn btn-primary">Facebook</a>
+        <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri }}&title={{ post.title }}" target="_blank" class="btn btn-primary">LinkedIn</a>
+    </div>
+    <div class="mt-3">
+        <p>Or copy this link:</p>
+        <input type="text" class="form-control" value="{{ request.build_absolute_uri }}" readonly>
+    </div>
+</div>
+{% endblock %}
