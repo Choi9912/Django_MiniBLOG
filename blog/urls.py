@@ -18,6 +18,7 @@ urlpatterns = [
     path("post/new/", views.PostCreateView.as_view(), name="post_create"),
     path("post/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post_update"),
     path("post/<int:pk>/delete/", views.PostDeleteView.as_view(), name="post_delete"),
+    path("suggest-title/", views.suggest_title, name="suggest_title"),
     path("login/", CustomLoginView.as_view(), name="account_login"),
     path("search/", views.PostSearchView.as_view(), name="post_search"),
     path(
@@ -44,9 +45,6 @@ urlpatterns = [
         "comment/<int:pk>/like/",
         views.CommentLikeToggleView.as_view(),
         name="comment_like_toggle",
-    ),
-    path(
-        "comment/<int:pk>/delete/", CommentDeleteView.as_view(), name="comment_delete"
     ),
     path("reply/<int:pk>/delete/", ReplyDeleteView.as_view(), name="reply_delete"),
     path(

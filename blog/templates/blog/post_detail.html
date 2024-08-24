@@ -28,7 +28,8 @@
               {% else %}
                 <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;"></div>
               {% endif %}
-              <a href="{% url 'profile_view' username=post.author.username %}" class="font-weight-bold text-dark">{{ post.author }}</a>
+              <a href="{% url 'profile_view' username=post.author.username %}" class="font-weight-bold text-dark">{{ post.author.username }}</a>
+
             </div>
             <div>
               {% if user != post.author %}
@@ -46,19 +47,7 @@
             <div class="blog-content">
               {{ content|safe }}
             </div>
-            <div class="post-actions mt-4 mb-3">
-              <form class="like-form" action="{% url 'post_like_toggle' post.id %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-outline-primary like-btn {% if user in post.likes.all %}liked{% endif %}" data-post-id="{{ post.pk }}">
-                    <i class="{% if user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
-                    <span class="like-count">{{ post.likes.count }}</span>
-                </button>
-            </form>
-
-              <button class="btn btn-sm btn-outline-info share-btn" data-post-id="{{ post.pk }}">
-                <i class="fas fa-share"></i> Share
-              </button>
-            </div>
+      
             <p>{{ post.created_at|date:"F d, Y" }} | Category: 
               {% if post.category %}
                 <a href="{% url 'category_posts' post.category.slug %}" class="text-muted">{{ post.category.name }}</a>
@@ -77,23 +66,35 @@
             </p>
           </div>
           <div class="card-footer bg-white">
-             <h6 class="mb-3">Comments</h6>
+            <div class="post-actions mt-2 mb-3">
+              <form class="like-form" action="{% url 'post_like_toggle' post.id %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-primary like-btn {% if user in post.likes.all %}liked{% endif %}" data-post-id="{{ post.pk }}">
+                    <i class="{% if user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                    <span class="like-count">{{ post.likes.count }}</span>
+                </button>
+            </form>
+            
+              <button class="btn btn-sm btn-outline-info share-btn" data-post-id="{{ post.pk }}">
+                <i class="fas fa-share"></i> 
+              </button>
+            </div>
              {% include 'blog/comments.html' with comments=post.comments.all %}
            </div>
            
            {% if user.is_authenticated %}
-           <div class="card-footer bg-white">
-             <form method="post" action="{% url 'comment_create' post.pk %}">
-               {% csrf_token %}
-               <div class="input-group">
-                 <textarea name="content" class="form-control" placeholder="Write a comment..." rows="3"></textarea>
-                 <div class="input-group-append">
-                   <button type="submit" class="btn btn-primary">Post</button>
-                 </div>
-               </div>
-             </form>
-           </div>
-           {% endif %}
+          <div class="card-footer bg-white">
+            <form method="post" action="{% url 'comment_create' post.pk %}" class="comment-form">
+              {% csrf_token %}
+              <div class="input-group">
+                <textarea name="content" class="form-control" placeholder="댓글 작성..." rows="1"></textarea>
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-post">게시</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          {% endif %}
         </div>
       </div>
     </div>

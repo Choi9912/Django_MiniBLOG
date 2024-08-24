@@ -17,90 +17,71 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container">
-          <a class="navbar-brand" href="{% url 'post_list' %}">InstaBLOG</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'post_list' %}"><i class="fas fa-home"></i></a>
-              </li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="fas fa-compass"></i>
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <li><a class="dropdown-item" href="{% url 'category_list' %}">Categories</a></li>
-                  <li><a class="dropdown-item" href="{% url 'tag_list' %}">Tags</a></li>
-                </ul>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'post_create' %}"><i class="fas fa-plus-square"></i></a>
-              </li>
-              {% if user.is_authenticated %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'profile_view' username=user.username %}"><i class="fas fa-user"></i></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt"></i></a>
-                </li>
-              {% else %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'account_login' %}">Login</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'account_signup' %}">Sign Up</a>
-                </li>
-              {% endif %}
+  <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+      <a class="navbar-brand" href="{% url 'post_list' %}">InstaBLOG</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item">
+            <form class="d-flex" action="{% url 'post_search' %}" method="get">
+              <div class="input-group">
+                <input class="form-control form-control-sm" type="search" placeholder="Search" aria-label="Search" name="q">
+                <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="fas fa-search"></i></button>
+              </div>
+            </form>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'post_list' %}"><i class="fas fa-home"></i></a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-compass"></i>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="{% url 'category_list' %}">Categories</a></li>
+              <li><a class="dropdown-item" href="{% url 'tag_list' %}">Tags</a></li>
             </ul>
-          </div>
-        </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'post_create' %}"><i class="fas fa-plus-square"></i></a>
+          </li>
+          {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'profile_view' username=user.username %}"><i class="fas fa-user"></i></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt"></i></a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'account_signup' %}">Sign Up</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
       </nav>
-      <div class="content-wrapper">
-        {% if show_sidebar %}
-        <div class="sidebar">
-            {% include 'blog/sidebar.html' %}
-        </div>
-        {% endif %}
-        <div class="main-content {% if not show_sidebar %}full-width{% endif %}">
-            <div class="container mt-4">
-                {% block content %}
-                <!-- 예시 포스트 (카테고리와 태그 포함) -->
-                <div class="post-card">
-                    <div class="post-header">
-                        <img src="https://via.placeholder.com/32" alt="User Avatar">
-                        <span class="username">username</span>
-                    </div>
-                    <div class="post-image">
-                        <img src="https://via.placeholder.com/614x614" alt="Post Image">
-                    </div>
-                    <div class="post-actions">
-                        <button><i class="far fa-heart"></i></button>
-                        <button><i class="far fa-comment"></i></button>
-                        <button><i class="far fa-paper-plane"></i></button>
-                    </div>
-                    <div class="post-likes">
-                        123 likes
-                    </div>
-                    <div class="post-caption">
-                        <strong>username</strong> This is a sample post caption.
-                    </div>
-                    <div class="category-tag-container">
-                        <a href="{% url 'category_posts' 'sample-category' %}" class="category-badge">
-                            <i class="fas fa-folder"></i> Sample Category
-                        </a>
-                        <a href="{% url 'tag_posts' 'sample-tag' %}" class="tag-badge">
-                            <i class="fas fa-tag"></i> Sample Tag
-                        </a>
-                    </div>
-                    <div class="post-comments">
-                        View all 5 comments
+      <div class="container mt-4">
+        <div class="row">
+            {% if show_sidebar %}
+                <div class="col-md-3">
+                    <div class="sidebar">
+                        {% include 'blog/sidebar.html' %}
                     </div>
                 </div>
-                {% endblock %}
+            {% endif %}
+            <div class="col-md-{% if show_sidebar %}9{% else %}12{% endif %}">
+                <div class="main-content">
+                    {% block content %}
+                    {% endblock %}
+                </div>
             </div>
         </div>
     </div>

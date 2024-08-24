@@ -1,5 +1,7 @@
+from datetime import timezone
 import re
 from django.conf import settings
+from django.db import IntegrityError
 from django.http import JsonResponse
 from django.views import View
 from django.views.generic import (
@@ -9,7 +11,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Q
@@ -19,6 +21,14 @@ from blog.forms import CustomPostForm, ProfileForm
 from .models import Post, Comment, Category, Tag, Profile
 from django.db.models import Count, F, ExpressionWrapper, fields
 import markdown2
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+import requests
 
 
 class CustomLoginView(LoginView):
@@ -47,13 +57,22 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        response = super().form_valid(form)
-        self.request.user.username = form.cleaned_data["username"]
-        self.request.user.save()
-        return response
+        try:
+            # 사용자 이름 변경 시도
+            new_username = form.cleaned_data["username"]
+            if new_username != self.request.user.username:
+                if User.objects.filter(username=new_username).exists():
+                    form.add_error("username", "이미 사용 중인 사용자 이름입니다.")
+                    return self.form_invalid(form)
+                self.request.user.username = new_username
+                self.request.user.save()
 
-
-from django.contrib.auth.models import User
+            response = super().form_valid(form)
+            messages.success(self.request, "프로필이 성공적으로 업데이트되었습니다.")
+            return response
+        except IntegrityError:
+            form.add_error("username", "사용자 이름 업데이트 중 오류가 발생했습니다.")
+            return self.form_invalid(form)
 
 
 class ProfileView(DetailView):
@@ -83,20 +102,41 @@ class ProfileView(DetailView):
         return context
 
 
+from django.db.models import Count, F, ExpressionWrapper, fields
+from django.utils import timezone
+from datetime import timedelta
+
+
 class PopularPostsMixin:
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        popular_posts = Post.objects.annotate(
+    def get_popular_posts(self):
+        return Post.objects.annotate(
             popularity=ExpressionWrapper(
                 F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
                 output_field=fields.IntegerField(),
             )
         ).order_by("-popularity")[:5]
-        context["popular_posts"] = popular_posts
+
+    def get_weekly_ranking(self):
+        one_week_ago = timezone.now() - timedelta(days=7)
+        return (
+            Post.objects.filter(created_at__gte=one_week_ago)
+            .annotate(
+                weekly_score=ExpressionWrapper(
+                    F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
+                    output_field=fields.IntegerField(),
+                )
+            )
+            .order_by("-weekly_score")[:5]
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["popular_posts"] = self.get_popular_posts()
+        context["weekly_ranking"] = self.get_weekly_ranking()
         return context
 
 
-class PostListView(ListView):
+class PostListView(PopularPostsMixin, ListView):
     model = Post
     template_name = "blog/post_list.html"
     context_object_name = "posts"
@@ -104,18 +144,13 @@ class PostListView(ListView):
 
     def get_queryset(self):
         queryset = Post.objects.all()
-
-        # 정렬 옵션 처리
         sort_by = self.request.GET.get("sort", "latest")
         if sort_by == "latest":
-            queryset = queryset.order_by("-created_at")
+            return queryset.order_by("-created_at")
         elif sort_by == "likes":
-            queryset = queryset.annotate(like_count=Count("likes")).order_by(
-                "-like_count"
-            )
+            return queryset.annotate(like_count=Count("likes")).order_by("-like_count")
         elif sort_by == "views":
-            queryset = queryset.order_by("-view_count")
-
+            return queryset.order_by("-view_count")
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -123,20 +158,7 @@ class PostListView(ListView):
         context["categories"] = Category.objects.all()
         context["tags"] = Tag.objects.all()
         context["current_sort"] = self.request.GET.get("sort", "latest")
-
-        # 인기 있는 상위 5개 포스트 가져오기
-        popular_posts = Post.objects.annotate(
-            popularity=ExpressionWrapper(
-                F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
-                output_field=fields.IntegerField(),
-            )
-        ).order_by("-popularity")[:5]
-
-        context["popular_posts"] = popular_posts
-
-        # 메인 페이지에서만 사이드바 표시
         context["show_sidebar"] = True
-
         return context
 
 
@@ -153,21 +175,26 @@ class PostDetailView(PopularPostsMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.object
-
-        # 마크다운을 HTML로 변환
         content_html = markdown2.markdown(
             post.content, extras=["fenced-code-blocks", "tables"]
         )
-
-        # HTML에서 태그 링크 생성
         content_with_links = re.sub(
             r"#(\w+)",
             lambda m: f'<a href="{reverse("tag_posts", kwargs={"slug": m.group(1)})}" class="tag-link">#{m.group(1)}</a>',
             content_html,
         )
-
         context["content"] = content_with_links
         return context
+
+
+from django.contrib import messages
+from .utils import suggest_title_improvement
+
+
+def suggest_title(request):
+    original_title = request.GET.get("title", "")
+    suggested_title = suggest_title_improvement(original_title)
+    return JsonResponse({"suggested_title": suggested_title})
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -177,8 +204,14 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("post_list")
 
     def form_valid(self, form):
+
         form.instance.author = self.request.user
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_new_post"] = True
+        return context
 
 
 class PostUpdateView(LoginRequiredMixin, UpdateView):
@@ -196,16 +229,43 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("post_list")
 
 
+from django.views.generic import ListView
+from django.db.models import Q
+from .models import Post, Category
+
+
 class PostSearchView(ListView):
     model = Post
     template_name = "blog/post_search.html"
     context_object_name = "posts"
+    paginate_by = 10  # 페이지당 10개의 결과를 보여줍니다
 
     def get_queryset(self):
-        query = self.request.GET.get("q")
-        return Post.objects.filter(
-            Q(title__icontains=query) | Q(content__icontains=query)
-        )
+        query = self.request.GET.get("q", "")
+        search_type = self.request.GET.get("type", "all")
+
+        if query:
+            if search_type == "title":
+                return Post.objects.filter(title__icontains=query)
+            elif search_type == "tag":
+                return Post.objects.filter(tags__name__icontains=query).distinct()
+            elif search_type == "category":
+                return Post.objects.filter(category__name__icontains=query).distinct()
+            else:  # 'all' or any other value
+                return Post.objects.filter(
+                    Q(title__icontains=query)
+                    | Q(content__icontains=query)
+                    | Q(tags__name__icontains=query)
+                    | Q(category__name__icontains=query)
+                ).distinct()
+        return Post.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["query"] = self.request.GET.get("q", "")
+        context["search_type"] = self.request.GET.get("type", "all")
+        context["categories"] = Category.objects.all()
+        return context
 
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -308,12 +368,6 @@ class TagDetailView(DetailView):
         return context
 
 
-from django.views.decorators.http import require_POST
-
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-
-
 class PostLikeToggleView(LoginRequiredMixin, View):
     @method_decorator(require_POST)
     def post(self, request, *args, **kwargs):
@@ -328,19 +382,6 @@ class PostLikeToggleView(LoginRequiredMixin, View):
             liked = True
 
         return JsonResponse({"likes_count": post.likes.count(), "liked": liked})
-
-
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import CreateView, DeleteView
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from django.views import View
-from django.http import JsonResponse
-
-from .models import Comment
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -427,11 +468,6 @@ class ReplyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         success_url = self.get_success_url()
         self.object.delete()
         return redirect(success_url)
-
-
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.http import JsonResponse
 
 
 @login_required

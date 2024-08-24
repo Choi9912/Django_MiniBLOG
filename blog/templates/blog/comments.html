@@ -1,51 +1,88 @@
-{% for comment in comments %}
-    {% if not comment.parent_comment %}
-        <div id="comment-{{ comment.id }}" class="comment mb-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <strong>{{ comment.author }}</strong>
-                <small>{{ comment.created_at|date:"F d, Y H:i" }}</small>
-            </div>
-            {% if comment.is_removed %}
-                <p class="text-muted"><em>이 댓글은 삭제되었습니다.</em></p>
-            {% else %}
-                <p>{{ comment.content }}</p>
-                <div class="comment-actions">
-                    <button class="btn btn-sm btn-outline-primary like-button" data-comment-id="{{ comment.id }}">
-                        <i class="fas fa-heart"></i> <span class="like-count">{{ comment.likes.count }}</span>
-                    </button>
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'reply_create' comment.pk %}" class="btn btn-sm btn-outline-secondary">Reply</a>
-                        {% if user == comment.author %}
-                            <a href="{% url 'comment_update' comment.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                            <a href="{% url 'comment_delete' comment.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
-                        {% endif %}
+{% load static %}
+
+<div class="comments-section">
+    {% for comment in comments %}
+        {% if not comment.parent_comment %}
+        <div id="comment-{{ comment.id }}" class="comment mb-4">
+            <div class="d-flex align-items-start mb-2">
+                <a href="{% url 'profile_view' comment.author.username %}" class="profile-link">
+                    {% if comment.author.profile.profile_picture %}
+                    <img src="{{ comment.author.profile.profile_picture.url }}" alt="{{ comment.author.username }} Avatar" class="rounded-circle mr-3" style="width: 32px; height: 32px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;"></div>
                     {% endif %}
-                </div>
-            {% endif %}
-            
-            {% if comment.replies.all %}
-                <div class="replies ml-4 mt-3">
-                    <h6>Replies:</h6>
-                    {% for reply in comment.replies.all %}
-                        <div id="reply-{{ reply.id }}" class="reply mb-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <strong>{{ reply.author }}</strong>
-                                <small>{{ reply.created_at|date:"F d, Y H:i" }}</small>
-                            </div>
-                            <p>{{ reply.content }}</p>
-                            <div class="reply-actions">
-                                <button class="btn btn-sm btn-outline-primary like-button" data-comment-id="{{ reply.id }}">
-                                    <i class="fas fa-heart"></i> <span class="like-count">{{ reply.likes.count }}</span>
-                                </button>
-                                {% if user == reply.author %}
-                                    <a href="{% url 'comment_update' reply.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                                    <a href="{% url 'reply_delete' reply.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                </a>
+                <div class="comment-content">
+                    <strong>{{ comment.author.username }}</strong>
+                    {% if comment.is_removed %}
+                    <span class="text-muted"><em>이 댓글은 삭제되었습니다.</em></span>
+                    {% else %}
+                    {{ comment.content }}
+                    {% endif %}
+                        <div class="comment-meta text-muted">
+                            <small>{{ comment.created_at|timesince }} ago</small>
+                            {% if user.is_authenticated and not comment.is_removed %}
+                                · <a href="{% url 'reply_create' comment.pk %}" class="text-muted reply-link">Reply</a>
+                                {% if user == comment.author %}
+                                    · <a href="{% url 'comment_update' comment.pk %}" class="text-muted">Edit</a>
+                                    · <a href="{% url 'comment_delete' comment.pk %}" class="text-muted">Delete</a>
                                 {% endif %}
-                            </div>
+                            {% endif %}
                         </div>
-                    {% endfor %}
+                    </div>
                 </div>
-            {% endif %}
-        </div>
-    {% endif %}
-{% endfor %}
+                
+                
+                        {% if comment.replies.all %}
+                        <div class="replies ml-5">
+                            {% for reply in comment.replies.all %}
+                            <div id="reply-{{ reply.id }}" class="reply mb-2">
+                                <div class="d-flex align-items-start">
+                                <a href="{% url 'profile_view' reply.author.username %}" class="profile-link">
+                                    {% if reply.author.profile.profile_picture %}
+                                    <img src="{{ reply.author.profile.profile_picture.url }}" alt="{{ reply.author.username }} Avatar" class="rounded-circle mr-2" style="width: 24px; height: 24px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="rounded-circle mr-2 bg-secondary d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;"></div>
+                                    {% endif %}
+                                </a>
+                                <div class="reply-content">
+                                    <strong>{{ reply.author.username }}</strong> {{ reply.content }}
+                                        <div class="reply-meta text-muted">
+                                            <small>{{ reply.created_at|timesince }} ago</small>
+                                            {% if user == reply.author %}
+                                                · <a href="{% url 'comment_update' reply.pk %}" class="text-muted">Edit</a>
+                                                · <a href="{% url 'reply_delete' reply.pk %}" class="text-muted">Delete</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<style>
+    .comments-section {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .comment, .reply {
+        background-color: #fff;
+        border-radius: 3px;
+    }
+    .comment-content, .reply-content {
+        flex: 1;
+    }
+    .comment-meta a, .reply-meta a {
+        text-decoration: none;
+    }
+    .comment-meta a:hover, .reply-meta a:hover {
+        text-decoration: underline;
+    }
+    .reply-link {
+        font-weight: 600;
+    }
+</style>

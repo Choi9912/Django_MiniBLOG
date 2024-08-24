@@ -2,6 +2,7 @@ from django import forms
 from .models import Post, Profile, Tag
 import re
 from django_summernote.widgets import SummernoteWidget
+from django.contrib.auth.models import User
 
 
 class ProfileForm(forms.ModelForm):
@@ -11,10 +12,30 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ["bio", "profile_picture", "birth_date", "location"]
 
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        if (
+            User.objects.filter(username=username)
+            .exclude(pk=self.instance.user.pk)
+            .exists()
+        ):
+            raise forms.ValidationError("이미 사용 중인 사용자 이름입니다.")
+        return username
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.user:
             self.fields["username"].initial = self.instance.user.username
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        if (
+            User.objects.filter(username=username)
+            .exclude(pk=self.instance.user.pk)
+            .exists()
+        ):
+            raise forms.ValidationError("이미 사용 중인 사용자 이름입니다.")
+        return username
 
     def save(self, commit=True):
         profile = super().save(commit=False)

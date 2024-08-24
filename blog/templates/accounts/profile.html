@@ -9,31 +9,31 @@
     <div class="profile-header">
         <div class="profile-image-container">
             {% if profile.profile_picture %}
-                <img src="{{ profile.profile_picture.url }}" alt="{{ user.username }}" class="profile-picture">
+                <img src="{{ profile.profile_picture.url }}" alt="{{ profile.user.username }}" class="profile-picture">
             {% else %}
-                <img src="https://via.placeholder.com/150" alt="{{ user.username }}" class="profile-picture">
+                <img src="https://via.placeholder.com/150" alt="{{ profile.user.username }}" class="profile-picture">
             {% endif %}
         </div>
         <div class="profile-info">
-            <h2 class="username">{{ user.username }}</h2>
+            <h2><span class="username">{{ profile.user.username }}</span></h2>
             <div class="profile-stats">
                 <span><strong>{{ user_posts.count }}</strong> 게시물</span>
                 <span><strong>{{ profile.followers.count }}</strong> 팔로워</span>
-                <span><strong>{{ profile.following.count }}</strong> 팔로우</span>
+                <span><strong>{{ profile.user.following.count }}</strong> 팔로우</span>
             </div>
             <div class="profile-actions">
                 {% if is_own_profile %}
                     <a href="{% url 'profile_update' %}" class="btn btn-outline-secondary">프로필 편집</a>
                     <a href="{% url 'user_dashboard' %}" class="btn btn-outline-info">대시보드 보기</a>
-                {% else %}
-                    <button class="btn btn-primary follow-btn" data-user-id="{{ user.id }}">
-                        {% if request.user in profile.followers.all %}팔로우 취소{% else %}팔로우{% endif %}
+                {% elif user.is_authenticated %}
+                    <button class="btn btn-primary follow-btn" data-username="{{ profile.user.username }}">
+                        {% if is_following %}팔로우 취소{% else %}팔로우{% endif %}
                     </button>
                 {% endif %}
             </div>
         </div>
     </div>
-    
+
     <div class="profile-bio">
         <p><strong>{{ profile.bio }}</strong></p>
         <p>{{ profile.location }}</p>
@@ -53,9 +53,10 @@
                     </a>
                 </div>
             {% empty %}
-                <p class="no-posts">{% trans "No posts yet." %}</p>
+                <p>{% trans "No posts yet." %}</p>
             {% endfor %}
         </div>
     </div>
 </div>
+
 {% endblock %}

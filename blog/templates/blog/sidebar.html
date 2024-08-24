@@ -4,28 +4,44 @@
 <script src="{% static 'blog/js/sidebar.js' %}"></script>
 {% endblock %}
 
-<div class="popular-blogs">
+<div class="sidebar-section popular-blogs">
     <h3>Top 5 Blogs</h3>
     {% for post in popular_posts %}
-        <div class="popular-blog-item" data-id="{{ post.pk }}">
+        <div class="popular-blog-item">
             <div class="profile-picture-container">
                 {% if post.author.profile.profile_picture %}
-                    <img class="profile-picture" src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author }}">
+                    <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author }}" class="profile-picture">
                 {% else %}
-                    <div class="profile-placeholder"></div>
+                    <div class="profile-placeholder">{{ post.author.username|first|upper }}</div>
                 {% endif %}
             </div>
             <div class="popular-blog-info">
-                <a href="{% url 'post_detail' post.pk %}" title="{{ post.title }}">{{ post.title|truncatechars:20 }}</a>
-                <p></p>
-                <small>
+                <a href="{% url 'post_detail' post.pk %}" title="{{ post.title }}">{{ post.title|truncatechars:30 }}</a>
+                <span class="small">
                     <i class="fas fa-eye"></i> {{ post.view_count }}
                     <i class="fas fa-heart"></i> {{ post.likes.count }}
                     <i class="fas fa-comment"></i> {{ post.comments.count }}
-                </small>
+                </span>
             </div>
         </div>
     {% empty %}
         <p>No popular posts yet.</p>
+    {% endfor %}
+</div>
+
+<div class="sidebar-section weekly-ranking">
+    <h3>Weekly Ranking</h3>
+    {% for post in weekly_ranking %}
+        <div class="weekly-ranking-item">
+            <div class="ranking-number">{{ forloop.counter }}</div>
+            <div class="weekly-ranking-info">
+                <a href="{% url 'post_detail' post.pk %}" title="{{ post.title }}">{{ post.title|truncatechars:30 }}</a>
+                <span class="small">
+                    <i class="fas fa-star"></i> Score: {{ post.weekly_score }}
+                </span>
+            </div>
+        </div>
+    {% empty %}
+        <p>No ranking data available.</p>
     {% endfor %}
 </div>

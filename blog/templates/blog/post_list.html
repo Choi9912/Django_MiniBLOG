@@ -26,7 +26,7 @@
                 <div class="post-header">
                     <a href="{% url 'profile_view' post.author.username %}" class="profile-link">
                         {% if post.author.profile.profile_picture %}
-                            <img src="{{ post.author.profile.profile_picture.url }}" alt=" {{ post.author.username }} Avatar" class="avatar">
+                            <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author.username }} Avatar" class="avatar">
                         {% else %}
                             <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;"></div>
                         {% endif %}
