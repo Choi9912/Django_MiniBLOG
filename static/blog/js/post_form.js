@@ -1,79 +1,84 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Select2 initialization for tags
-  $('#{{ form.tags.id_for_label }}').select2({
-      tags: true,
-      tokenSeparators: [',', ' '],
-      placeholder: "Enter tags",
-  });
-});
+    console.log('DOMContentLoaded event fired');
 
+    // Initialize Select2 for tags
+    initializeTagsField();
 
-document.addEventListener('DOMContentLoaded', function() {
-  const autocompleteUrl = '{% url "jeju_autocomplete" %}';
+    // Title suggestion functionality
+    initializeTitleSuggestion();
 
-  CKEDITOR.plugins.add('autocomplete', {
-    init: function(editor) {
-      let typingTimer;
-      const doneTypingInterval = 1000; // 1초 후에 자동완성 시작
-
-      editor.on('key', function() {
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(function() {
-          const selection = editor.getSelection();
-          const range = selection.getRanges()[0];
-          const fragment = range.extractContents();
-          const text = fragment.getFirst().getText();
-
-          // 최소 2글자 이상 입력되었을 때만 자동완성 실행
-          if (text.length >= 2) {
-            fetch(`${autocompleteUrl}?query=${encodeURIComponent(text)}`)
-              .then(response => response.json())
-              .then(suggestions => {
-                if (suggestions && suggestions.length > 0) {
-                  showSuggestions(editor, suggestions);
-                }
-              })
-              .catch(error => {
-                console.error('Error:', error);
-                editor.showNotification('자동완성 로드 중 오류가 발생했습니다.', 'warning');
-              });
-          }
-        }, doneTypingInterval);
-      });
-
-      function showSuggestions(editor, suggestions) {
-        const editorRect = editor.ui.contentsElement.getBoundingClientRect();
-        const div = document.createElement('div');
-        div.className = 'cke_autocomplete_panel';
-        div.style.position = 'absolute';
-        div.style.zIndex = '10000';
-        div.style.left = `${editorRect.left}px`;
-        div.style.top = `${editorRect.bottom + 5}px`;
-
-        suggestions.forEach(suggestion => {
-          const p = document.createElement('p');
-          p.textContent = suggestion;
-          p.onclick = function() {
-            editor.insertText(` ${suggestion} `);
-            document.body.removeChild(div);
-          };
-          div.appendChild(p);
-        });
-
-        // 이전에 생성된 제안 패널이 있다면 제거
-        const oldPanel = document.querySelector('.cke_autocomplete_panel');
-        if (oldPanel) {
-          oldPanel.remove();
+    function initializeTagsField() {
+        const tagsField = document.getElementById('id_tags');
+        if (tagsField) {
+            $(tagsField).select2({
+                tags: true,
+                tokenSeparators: [',', ' '],
+                placeholder: "Enter tags",
+            });
+        } else {
+            console.warn('Tags field not found. Element ID: id_tags');
         }
-
-        document.body.appendChild(div);
-      }
     }
-  });
 
-  // CKEditor 설정에 개선된 자동완성 플러그인 추가
-  CKEDITOR.replace('{{ form.content.auto_id }}', {
-    extraPlugins: 'autocomplete',
-    // 기타 CKEditor 설정...
-  });
+    function initializeTitleSuggestion() {
+        const titleInput = document.getElementById('id_title');
+        const suggestButton = document.getElementById('suggest-title');
+        const suggestedTitleDiv = document.getElementById('suggested-title');
+        const suggestedTitleText = document.getElementById('suggested-title-text');
+        const useSuggestedTitleButton = document.getElementById('use-suggested-title');
+
+        if (titleInput && suggestButton && suggestedTitleDiv && suggestedTitleText && useSuggestedTitleButton) {
+            suggestButton.addEventListener('click', function() {
+                const title = titleInput.value.trim();
+                if (title.length > 0) {
+                    fetchSuggestedTitle(title);
+                }
+            });
+
+            useSuggestedTitleButton.addEventListener('click', function() {
+                const suggestedTitle = suggestedTitleText.textContent.replace('제안된 제목: ', '');
+                titleInput.value = suggestedTitle;
+                suggestedTitleDiv.style.display = 'none';
+            });
+        } else {
+            console.warn('One or more elements for title suggestion not found');
+        }
+    }
+
+    function fetchSuggestedTitle(title) {
+        fetch('/autocomplete-title/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({title: title})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.suggested_title && data.suggested_title !== title) {
+                document.getElementById('suggested-title-text').textContent = `제안된 제목: ${data.suggested_title}`;
+                document.getElementById('suggested-title').style.display = 'block';
+            } else {
+                document.getElementById('suggested-title').style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // CSRF 토큰을 가져오는 함수
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 });

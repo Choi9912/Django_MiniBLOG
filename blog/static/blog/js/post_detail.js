@@ -42,18 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.href = sharePostUrl;
   });
 
-  // 팔로우 버튼 기능
-  $('.follow-btn').click(function() {
-    var userId = $(this).data('user-id');
-    var button = $(this);
-    $.post(`/follow/${userId}/`, function(data) {
-      if (data.following) {
-        button.text('Unfollow');
-      } else {
-        button.text('Follow');
-      }
-    });
-  });
 });$(document).ready(function() {
   // 대댓글 폼 생성
   $(document).on('click', '.reply-btn', function() {

@@ -1,135 +1,84 @@
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('DOMContentLoaded event fired');
-  if (typeof autocompleteUrl === 'undefined') {
-    console.error('autocompleteUrl is not defined');
-    return;
-  } else {
-      console.log('autocompleteUrl:', autocompleteUrl);
-  }
-  if (typeof tagsFieldId === 'undefined') {
-      console.error('tagsFieldId is not defined');
-      return;
-  }
-  if (typeof contentFieldId === 'undefined') {
-      console.error('contentFieldId is not defined');
-      return;
-  }
-  
+    console.log('DOMContentLoaded event fired');
 
+    // Initialize Select2 for tags
+    initializeTagsField();
 
-  // Initialize Select2 for tags
-  if ($('#' + tagsFieldId).length) {
-      $('#' + tagsFieldId).select2({
-          tags: true,
-          tokenSeparators: [',', ' '],
-          placeholder: "Enter tags",
-      });
-  } else {
-      console.warn('Tags field not found');
-  }
+    // Title suggestion functionality
+    initializeTitleSuggestion();
 
-  // Initialize Summernote
-  if ($('#' + contentFieldId).length) {
-      $('#' + contentFieldId).summernote({
-          height: 300,
-          callbacks: {
-              onInit: function() {
-                  console.log('Summernote initialized');
-                  $(this).summernote('code', ''); // Start with empty content
-              },
-              onChange: function(contents, $editable) {
-                  console.log('Content changed:', contents);
-              }
-          }
-      });
-
-      // Listen for Ctrl+Alt key combination to trigger autocomplete
-      $(document).on('keydown', function(e) {
-          if (e.ctrlKey && e.altKey) {
-              e.preventDefault();
-              triggerAutocomplete();
-          }
-      });
-  } else {
-      console.warn('Content field not found');
-  }
-
-  function triggerAutocomplete() {
-      console.log('Autocomplete triggered');
-      const editorContent = $('#' + contentFieldId).summernote('code');
-      const lastWord = editorContent.split(/\s+/).pop(); // Get the last word
-
-      if (lastWord.length > 0) {
-          $.ajax({
-              url: autocompleteUrl,
-              data: { q: lastWord },
-              success: function(suggestions) {
-                  console.log('Suggestions:', suggestions);
-                  showSuggestions(suggestions);
-              },
-              error: function(xhr, status, error) {
-                  console.error('Autocomplete error:', error);
-              }
-          });
-      } else {
-          console.warn('No valid input for autocomplete');
-      }
-  }
-
-  function showSuggestions(suggestions) {
-      const editor = $('#' + contentFieldId);
-      const editorPos = editor.offset();
-      const div = document.createElement('div');
-      div.className = 'summernote_autocomplete_panel';
-      div.style.position = 'absolute';
-      div.style.zIndex = '10000';
-      div.style.left = `${editorPos.left}px`;
-      div.style.top = `${editorPos.top + editor.outerHeight()}px`;
-
-      suggestions.forEach(suggestion => {
-          const p = document.createElement('p');
-          p.textContent = suggestion;
-          p.onclick = function() {
-              editor.summernote('insertText', ` ${suggestion} `);
-              document.body.removeChild(div);
-          };
-          div.appendChild(p);
-      });
-
-      const oldPanel = document.querySelector('.summernote_autocomplete_panel');
-      if (oldPanel) {
-          oldPanel.remove();
-      }
-
-      document.body.appendChild(div);
-  }
-});
-$(document).ready(function() {
-    $('#suggest-title-btn').click(function() {
-        var originalTitle = $('#id_title').val();
-        if (originalTitle) {
-            $.ajax({
-                url: '/suggest-title/',  // URL을 하드코딩하지 않고 동적으로 가져오는 방법을 고려해보세요
-                data: {'title': originalTitle},
-                method: 'GET',
-                beforeSend: function() {
-                    $('#suggest-title-btn').prop('disabled', true).text('제안 중...');
-                },
-                success: function(data) {
-                    if (data.suggested_title) {
-                        $('#suggested-title').text('제안된 제목: ' + data.suggested_title)
-                            .show();
-                    }
-                },
-                error: function() {
-                    alert('제목 제안 중 오류가 발생했습니다.');
-                },
-                complete: function() {
-                    $('#suggest-title-btn').prop('disabled', false).text('제목 제안받기');
-                }
+    function initializeTagsField() {
+        const tagsField = document.getElementById('id_tags');
+        if (tagsField) {
+            $(tagsField).select2({
+                tags: true,
+                tokenSeparators: [',', ' '],
+                placeholder: "Enter tags",
             });
         } else {
-            alert('제목을 먼저 입력해주세요.');
+            console.warn('Tags field not found. Element ID: id_tags');
         }
-    });
+    }
+
+    function initializeTitleSuggestion() {
+        const titleInput = document.getElementById('id_title');
+        const suggestButton = document.getElementById('suggest-title');
+        const suggestedTitleDiv = document.getElementById('suggested-title');
+        const suggestedTitleText = document.getElementById('suggested-title-text');
+        const useSuggestedTitleButton = document.getElementById('use-suggested-title');
+
+        if (titleInput && suggestButton && suggestedTitleDiv && suggestedTitleText && useSuggestedTitleButton) {
+            suggestButton.addEventListener('click', function() {
+                const title = titleInput.value.trim();
+                if (title.length > 0) {
+                    fetchSuggestedTitle(title);
+                }
+            });
+
+            useSuggestedTitleButton.addEventListener('click', function() {
+                const suggestedTitle = suggestedTitleText.textContent.replace('제안된 제목: ', '');
+                titleInput.value = suggestedTitle;
+                suggestedTitleDiv.style.display = 'none';
+            });
+        } else {
+            console.warn('One or more elements for title suggestion not found');
+        }
+    }
+
+    function fetchSuggestedTitle(title) {
+        fetch('/autocomplete-title/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({title: title})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.suggested_title && data.suggested_title !== title) {
+                document.getElementById('suggested-title-text').textContent = `제안된 제목: ${data.suggested_title}`;
+                document.getElementById('suggested-title').style.display = 'block';
+            } else {
+                document.getElementById('suggested-title').style.display = 'none';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    // CSRF 토큰을 가져오는 함수
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 });

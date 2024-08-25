@@ -114,10 +114,10 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
 # 이메일 인증 건너뛰기 설정 (선택사항)
-SOCIALACCOUNT_AUTO_SIGNUP = True  # 소셜 계정으로 로그인 시 자동으로 회원가입을 진행합
+SOCIALACCOUNT_AUTO_SIGNUP = False  # 소셜 계정으로 로그인 시 자동으로 회원가입을 진행합
 SOCIALACCOUNT_EMAIL_REQUIRED = False  # 소셜 계정에서 이메일을 필수로 요구하지 않습니다.
-ACCOUNT_EMAIL_REQUIRED = False  #  일반 계정에서도 이메일을 필수로 요구하지 않습니다.
-ACCOUNT_USERNAME_REQUIRED = False  # 사용자 이름을 필수로 요구하지 않습니다.
+ACCOUNT_EMAIL_REQUIRED = True  #  일반 계정에서도 이메일을 필수로 요구하지 않습니다.
+ACCOUNT_USERNAME_REQUIRED = True  # 사용자 이름을 필수로 요구하지 않습니다.
 SOCIALACCOUNT_QUERY_EMAIL = False  # 소셜 제공자에게 이메일 정보를 요청하지 않습니다
 
 # 이메일 설정 (개발 환경에서는 콘솔에 출력)

@@ -8,11 +8,11 @@ from django.urls import reverse
 from imagekit.models import ProcessedImageField
 from imagekit.processors import ResizeToFill
 from django.utils.text import slugify
+from django.db.models.signals import post_save
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
     bio = models.TextField(max_length=500, blank=True)
     location = models.CharField(max_length=30, blank=True)
     birth_date = models.DateField(null=True, blank=True)
@@ -22,14 +22,27 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
+    def is_following(self, user):
+        return self.user.following.filter(user=user).exists()
+
     def follow(self, user):
-        return self.followers.add(user)
+        if not self.is_following(user):
+            user.profile.followers.add(self.user)
 
     def unfollow(self, user):
-        return self.followers.remove(user)
+        if self.is_following(user):
+            user.profile.followers.remove(self.user)
 
-    def is_following(self, user):
-        return self.followers.filter(id=user.id).exists()
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
 
 
 class Category(models.Model):

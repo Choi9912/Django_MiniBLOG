@@ -22,10 +22,10 @@
                         <div class="comment-meta text-muted">
                             <small>{{ comment.created_at|timesince }} ago</small>
                             {% if user.is_authenticated and not comment.is_removed %}
-                                · <a href="{% url 'reply_create' comment.pk %}" class="text-muted reply-link">Reply</a>
+                                · <a href="{% url 'reply_create' comment.pk %}" class="text-muted reply-link">답장</a>
                                 {% if user == comment.author %}
-                                    · <a href="{% url 'comment_update' comment.pk %}" class="text-muted">Edit</a>
-                                    · <a href="{% url 'comment_delete' comment.pk %}" class="text-muted">Delete</a>
+                                    · <a href="{% url 'comment_update' comment.pk %}" class="text-muted">수정</a>
+                                    · <a href="{% url 'comment_delete' comment.pk %}" class="text-muted">삭제</a>
                                 {% endif %}
                             {% endif %}
                         </div>
@@ -49,10 +49,14 @@
                                     <strong>{{ reply.author.username }}</strong> {{ reply.content }}
                                         <div class="reply-meta text-muted">
                                             <small>{{ reply.created_at|timesince }} ago</small>
-                                            {% if user == reply.author %}
-                                                · <a href="{% url 'comment_update' reply.pk %}" class="text-muted">Edit</a>
-                                                · <a href="{% url 'reply_delete' reply.pk %}" class="text-muted">Delete</a>
+                                            {% if user.is_authenticated and not comment.is_removed %}
+                                            · <a href="{% url 'reply_create' comment.pk %}" class="text-muted reply-link">답장</a>
+                                            {% if user == comment.author %}
+                                                · <a href="{% url 'comment_update' reply.pk %}" class="text-muted">수정</a>
+                                                · <a href="{% url 'reply_delete' reply.pk %}" class="text-muted">삭제</a>
                                             {% endif %}
+                                        {% endif %}
+
                                         </div>
                                     </div>
                                 </div>

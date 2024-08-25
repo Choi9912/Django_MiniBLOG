@@ -1,0 +1,95 @@
+.sidebar {
+    width: 100%;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-section {
+    margin-bottom: 30px;
+}
+
+.sidebar-section h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #262626;
+    border-bottom: 2px solid #3897f0;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.popular-blog-item, .weekly-ranking-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #efefef;
+    transition: background-color 0.3s ease;
+}
+
+.popular-blog-item:last-child, .weekly-ranking-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.popular-blog-item:hover, .weekly-ranking-item:hover {
+    background-color: #f8f9fa;
+}
+
+.profile-picture-container, .ranking-number {
+    width: 40px;
+    height: 40px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.profile-picture, .profile-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-placeholder {
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #757575;
+    font-weight: bold;
+}
+
+.ranking-number {
+    background-color: #3897f0;
+    color: #ffffff;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.popular-blog-info, .weekly-ranking-info {
+    flex-grow: 1;
+}
+
+.popular-blog-info a, .weekly-ranking-info a {
+    font-size: 14px;
+    font-weight: 600;
+    color: #262626;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.popular-blog-info .small, .weekly-ranking-info .small {
+    font-size: 12px;
+    color: #8e8e8e;
+}
+
+.popular-blog-info .small i, .weekly-ranking-info .small i {
+    margin-right: 4px;
+}

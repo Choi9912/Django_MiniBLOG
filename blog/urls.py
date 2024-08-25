@@ -1,66 +1,74 @@
 from django.urls import path
 from . import views
 from .views import (
-    CommentDeleteView,
     CustomLoginView,
-    ProfileUpdateView,
     ProfileView,
-    ReplyCreateView,
-    ReplyDeleteView,
+    PostView,
+    CommentView,
+    CategoryView,
+    TagView,
+    UserInteractionView,
+    PostManagementView,
+    user_dashboard,
 )
 
 urlpatterns = [
-    path("", views.PostListView.as_view(), name="post_list"),
-    path("profile/update/", views.ProfileUpdateView.as_view(), name="profile_update"),
-    path("profile/", views.ProfileView.as_view(), name="profile_view"),
-    path("profile/<str:username>/", ProfileView.as_view(), name="profile_view"),
-    path("post/<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
-    path("post/new/", views.PostCreateView.as_view(), name="post_create"),
-    path("post/<int:pk>/edit/", views.PostUpdateView.as_view(), name="post_update"),
-    path("post/<int:pk>/delete/", views.PostDeleteView.as_view(), name="post_delete"),
-    path("suggest-title/", views.suggest_title, name="suggest_title"),
+    path("", PostView.List.as_view(), name="post_list"),
     path("login/", CustomLoginView.as_view(), name="account_login"),
-    path("search/", views.PostSearchView.as_view(), name="post_search"),
+    # Profile URLs
+    path("profile/update/", ProfileView.Update.as_view(), name="profile_update"),
+    path("profile/<str:username>/", ProfileView.Detail.as_view(), name="profile_view"),
+    # Post URLs
+    path("post/<int:pk>/", PostView.Detail.as_view(), name="post_detail"),
+    path("post/new/", PostView.Create.as_view(), name="create_post"),
+    path(
+        "post/<int:pk>/edit/",
+        PostView.Update.as_view(),
+        name="post_update",
+    ),
+    path("post/<int:pk>/delete/", PostView.Delete.as_view(), name="post_delete"),
+    path("post/<int:pk>/like/", PostView.LikeToggle.as_view(), name="post_like_toggle"),
+    path("search/", PostView.Search.as_view(), name="post_search"),
+    # Comment URLs
     path(
         "post/<int:post_pk>/comment/new/",
-        views.CommentCreateView.as_view(),
+        CommentView.Create.as_view(),
         name="comment_create",
     ),
+    path("comment/<int:pk>/edit/", CommentView.Update.as_view(), name="comment_update"),
     path(
-        "comment/<int:pk>/edit/",
-        views.CommentUpdateView.as_view(),
-        name="comment_update",
+        "comment/<int:pk>/delete/", CommentView.Delete.as_view(), name="comment_delete"
     ),
-    path(
-        "comment/<int:pk>/delete/",
-        views.CommentDeleteView.as_view(),
-        name="comment_delete",
-    ),
-    path(
-        "post/<int:pk>/like/",
-        views.PostLikeToggleView.as_view(),
-        name="post_like_toggle",
-    ),
-    path(
-        "comment/<int:pk>/like/",
-        views.CommentLikeToggleView.as_view(),
-        name="comment_like_toggle",
-    ),
-    path("reply/<int:pk>/delete/", ReplyDeleteView.as_view(), name="reply_delete"),
     path(
         "comment/<int:comment_pk>/reply/",
-        ReplyCreateView.as_view(),
+        CommentView.ReplyCreate.as_view(),
         name="reply_create",
     ),
-    path("categories/", views.CategoryListView.as_view(), name="category_list"),
-    path("tags/", views.TagListView.as_view(), name="tag_list"),
     path(
-        "category/<str:slug>/",
-        views.CategoryPostListView.as_view(),
-        name="category_posts",
+        "reply/<int:pk>/delete/", CommentView.ReplyDelete.as_view(), name="reply_delete"
     ),
-    path("tag/<str:slug>/", views.TagPostListView.as_view(), name="tag_posts"),
-    path("follow/<int:user_id>/", views.follow_toggle, name="follow_toggle"),
-    path("share/<int:post_id>/", views.share_post, name="share_post"),
-    path("dashboard/", views.user_dashboard, name="user_dashboard"),
+    # Category URLs
+    path("categories/", CategoryView.List.as_view(), name="category_list"),
+    path(
+        "category/<str:slug>/", CategoryView.PostList.as_view(), name="category_posts"
+    ),
+    # Tag URLs
+    path("tags/", TagView.List.as_view(), name="tag_list"),
+    path("tag/<str:slug>/", TagView.PostList.as_view(), name="tag_posts"),
+    path("tag/<str:slug>/detail/", TagView.Detail.as_view(), name="tag_detail"),
+    # User Interaction URLs
+    path("notifications/", UserInteractionView.notifications, name="notifications"),
+    path(
+        "follow/<str:username>/",
+        UserInteractionView.follow_toggle,
+        name="follow_toggle",
+    ),
+    path("share/<int:post_id>/", UserInteractionView.share_post, name="share_post"),
+    path("dashboard/", user_dashboard, name="user_dashboard"),  # 수정된 부분
+    # Other URLs
+    path(
+        "autocomplete-title/",
+        PostManagementView.autocomplete_title,
+        name="autocomplete_title",
+    ),
 ]
