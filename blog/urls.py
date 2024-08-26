@@ -8,7 +8,6 @@ from .views import (
     CategoryView,
     TagView,
     UserInteractionView,
-    PostManagementView,
     user_dashboard,
 )
 
@@ -66,9 +65,4 @@ urlpatterns = [
     path("share/<int:post_id>/", UserInteractionView.share_post, name="share_post"),
     path("dashboard/", user_dashboard, name="user_dashboard"),  # 수정된 부분
     # Other URLs
-    path(
-        "autocomplete-title/",
-        PostManagementView.autocomplete_title,
-        name="autocomplete_title",
-    ),
 ]

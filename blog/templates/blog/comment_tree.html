@@ -1,0 +1,35 @@
+{% load static %}
+
+<div class="comment {% if depth > 0 %}ml-4{% endif %}">
+    <div class="d-flex align-items-start mb-2">
+        {% if comment.author.profile.profile_picture %}
+            <img src="{{ comment.author.profile.profile_picture.url }}" alt="{{ comment.author.username }} Avatar" class="rounded-circle mr-3" style="width: 32px; height: 32px; object-fit: cover;">
+        {% else %}
+            <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;"></div>
+        {% endif %}
+        <div class="comment-content">
+            <strong>{{ comment.author.username }}</strong>
+            {% if comment.is_removed %}
+                <span class="text-muted">이 댓글은 삭제되었습니다.</span>
+            {% else %}
+                {{ comment.content }}
+            {% endif %}
+            <div class="comment-meta text-muted">
+                <small>{{ comment.created_at|timesince }} ago</small>
+                {% if user.is_authenticated and not comment.is_removed %}
+                    · <a href="{% url 'reply_create' comment.pk %}" class="text-muted reply-link">답장</a>
+                    {% if user == comment.author %}
+                        · <a href="{% url 'comment_update' comment.pk %}" class="text-muted">수정</a>
+                        · <a href="{% url 'comment_delete' comment.pk %}" class="text-muted">삭제</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {% if comment.replies.all %}
+        {% for reply in comment.replies.all %}
+            {% include "blog/comment_tree.html" with comment=reply depth=depth|add:1 %}
+        {% endfor %}
+    {% endif %}
+</div>

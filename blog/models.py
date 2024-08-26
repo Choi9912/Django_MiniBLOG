@@ -1,4 +1,5 @@
 # blog/models.py
+from datetime import timezone
 from django.db import models
 from django.contrib.auth.models import User
 from django.db import models
@@ -84,7 +85,7 @@ class Tag(models.Model):
 
 class Post(models.Model):
     title = models.CharField(max_length=200)
-    content = models.TextField()  # RichTextField() 대신 일반 TextField 사용
+    content = models.TextField()
     head_image = ProcessedImageField(
         upload_to="blog/images/%Y/%m/%d/",
         processors=[ResizeToFill(300, 300)],
@@ -104,9 +105,10 @@ class Post(models.Model):
     likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
     birthday = models.DateField(null=True, blank=True)
     location = models.CharField(max_length=100, blank=True)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def calculate_popularity(self):
-        # 조회수, 좋아요, 댓글 수에 가중치를 적용
         view_weight = 1
         like_weight = 3
         comment_weight = 2
@@ -117,6 +119,11 @@ class Post(models.Model):
             + self.comments.count() * comment_weight
         )
         return popularity
+
+    def soft_delete(self):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
 
     def __str__(self):
         return self.title

@@ -4,7 +4,7 @@ from datetime import timedelta
 import requests
 from django.conf import settings
 from django.db import IntegrityError
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.views import View
 from django.views.generic import (
     ListView,
@@ -154,7 +154,7 @@ class PostView:
         paginate_by = 6
 
         def get_queryset(self):
-            queryset = Post.objects.all()
+            queryset = Post.objects.filter(is_deleted=False)
             sort_by = self.request.GET.get("sort", "latest")
             if sort_by == "latest":
                 return queryset.order_by("-created_at")
@@ -180,6 +180,8 @@ class PostView:
 
         def get_object(self):
             obj = super().get_object()
+            if obj.is_deleted:
+                raise Http404("존재하지 않는 게시글입니다.")
             obj.view_count += 1
             obj.save()
             return obj
@@ -225,6 +227,13 @@ class PostView:
         model = Post
         template_name = "blog/post_confirm_delete.html"
         success_url = reverse_lazy("post_list")
+
+        def form_valid(self, form):
+            success_url = self.get_success_url()
+            self.object.is_deleted = True
+            self.object.deleted_at = timezone.now()
+            self.object.save()
+            return redirect(success_url)
 
     class Search(ListView):
         model = Post
@@ -332,9 +341,6 @@ class CommentView:
             self.parent_comment = get_object_or_404(
                 Comment, pk=self.kwargs["comment_pk"]
             )
-            if self.parent_comment.parent_comment:
-                messages.error(self.request, "답글에는 답글을 달 수 없습니다.")
-                return redirect("post_detail", pk=self.parent_comment.post.pk)
             return super().dispatch(request, *args, **kwargs)
 
         def form_valid(self, form):
@@ -357,10 +363,8 @@ class CommentView:
 
         def test_func(self):
             comment = self.get_object()
-            return (
-                self.request.user == comment.author
-                and comment.parent_comment is not None
-            )
+            # 사용자가 대댓글의 작성자인지 확인
+            return self.request.user == comment.author
 
         def get_success_url(self):
             return reverse("post_detail", kwargs={"pk": self.object.post.pk})
@@ -486,62 +490,6 @@ class UserInteractionView:
     def share_post(cls, request, post_id):
         post = get_object_or_404(Post, id=post_id)
         return render(request, "blog/share_post.html", {"post": post})
-
-
-class PostManagementView:
-    @classmethod
-    @method_decorator(login_required)
-    @method_decorator(csrf_exempt)
-    def autocomplete_title(cls, request):
-        logger.info(f"Received autocomplete request: {request.method}")
-        if request.method == "POST":
-            try:
-                data = json.loads(request.body)
-                original_title = data.get("title", "")
-                logger.info(f"Original title: {original_title}")
-                suggested_title = cls.suggest_title(original_title)
-                logger.info(f"Suggested title: {suggested_title}")
-                return JsonResponse({"suggested_title": suggested_title})
-            except json.JSONDecodeError:
-                logger.error("Invalid JSON in request body")
-                return JsonResponse({"error": "Invalid JSON"}, status=400)
-            except Exception as e:
-                logger.exception(f"Error in autocomplete_title: {str(e)}")
-                return JsonResponse({"error": "Internal server error"}, status=500)
-        logger.warning("Invalid request method for autocomplete_title")
-        return JsonResponse({"error": "Invalid request method"}, status=400)
-
-    @staticmethod
-    def suggest_title(original_title):
-        api_url = "https://open-api.jejucodingcamp.workers.dev/"
-        payload = {
-            "prompt": f"아래의 제목을 더 흥미롭고 인터랙티브하게 개선해주세요:\n{original_title}",
-            "max_tokens": 60,
-            "temperature": 0.7,
-        }
-
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = requests.post(api_url, json=payload, timeout=10)
-                response.raise_for_status()
-
-                response_json = response.json()
-                if "choices" in response_json and len(response_json["choices"]) > 0:
-                    return response_json["choices"][0]["text"].strip()
-                else:
-                    print("No suggested title found in the API response")
-                    return original_title
-
-            except requests.RequestException as e:
-                print(f"API request failed (attempt {attempt + 1}/{max_retries}): {e}")
-                if attempt < max_retries - 1:
-                    time.sleep(2)  # 재시도 전 2초 대기
-                else:
-                    print("Max retries reached. Using original title.")
-                    return original_title
-
-        return original_title  # 모든 시도가 실패한 경우
 
 
 @login_required
