@@ -11,8 +11,8 @@
 <div class="profile-container">
     <div class="profile-header">
         <div class="profile-image-container">
-            {% if profile.profile_picture %}
-                <img src="{{ profile.profile_picture.url }}" alt="{{ profile.user.username }}" class="profile-picture">
+            {% if profile.images %}
+                <img src="{{ profile.images.url }}" alt="{{ profile.user.username }}" class="profile-picture">
             {% else %}
                 <img src="https://via.placeholder.com/150" alt="{{ profile.user.username }}" class="profile-picture">
             {% endif %}
@@ -26,14 +26,14 @@
             </div>
             <div class="profile-actions">
                 {% if is_own_profile %}
-                    <a href="{% url 'profile_update' %}" class="btn btn-outline-secondary">프로필 편집</a>
-                    <a href="{% url 'user_dashboard' %}" class="btn btn-outline-info">대시보드 보기</a>
-                {% elif user.is_authenticated and user != profile.user %}
+                    <a href="{% url 'accounts:profile_update' %}" class="btn btn-outline-secondary">프로필 편집</a>
+                    <a href="{% url 'accounts:user_dashboard' %}" class="btn btn-outline-info">대시보드 보기</a>
+                {% elif user.is_authenticated %}
                     <button id="follow-btn" class="btn btn-primary" data-username="{{ profile.user.username }}">
                         {% if is_following %}
-                            Unfollow
+                            팔로우 취소
                         {% else %}
-                            Follow
+                            팔로우
                         {% endif %}
                     </button>
                 {% endif %}
@@ -42,8 +42,9 @@
     </div>
 
     <div class="profile-bio">
-        <p><strong>{{ profile.bio }}</strong></p>
-        <p>{{ profile.location }}</p>
+        <p>생일 : {{profile.birthday}}</p>
+        <p>지역: {{ profile.location }}</p>
+        <p>자기소개 :{{ profile.bio }}</p>
     </div>
 
     <div class="profile-posts">
@@ -60,7 +61,7 @@
                     </a>
                 </div>
             {% empty %}
-                <p>{% trans "No posts yet." %}</p>
+                <p>{% trans "아직 게시물이 없습니다." %}</p>
             {% endfor %}
         </div>
     </div>

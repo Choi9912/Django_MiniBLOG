@@ -26,19 +26,19 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.error === 'login_required') {
-                    alert('로그인을 해주세요');
+                    throw new Error('login_required');
+                }
+                likesCountElement.textContent = `${data.likes_count} likes`;
+                if (data.liked) {
+                    likeButton.classList.add('liked');
                 } else {
-                    likesCountElement.textContent = `${data.likes_count} likes`;
-                    if (data.liked) {
-                        likeButton.classList.add('liked');
-                    } else {
-                        likeButton.classList.remove('liked');
-                    }
+                    likeButton.classList.remove('liked');
                 }
             })
             .catch(error => {
                 if (error.message === 'login_required') {
-                    alert('로그인을 해주세요');
+                    alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+                    window.location.href = '/accounts/login/';  // 로그인 페이지 URL을 적절히 수정하세요
                 } else {
                     console.error('Error:', error);
                 }

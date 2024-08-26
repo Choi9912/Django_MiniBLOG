@@ -17,10 +17,10 @@
             <div class="comment-meta text-muted">
                 <small>{{ comment.created_at|timesince }} ago</small>
                 {% if user.is_authenticated and not comment.is_removed %}
-                    · <a href="{% url 'reply_create' comment.pk %}" class="text-muted reply-link">답장</a>
+                    · <a href="{% url 'comments:reply_create' comment.pk %}" class="text-muted reply-link">답장</a>
                     {% if user == comment.author %}
-                        · <a href="{% url 'comment_update' comment.pk %}" class="text-muted">수정</a>
-                        · <a href="{% url 'comment_delete' comment.pk %}" class="text-muted">삭제</a>
+                        · <a href="{% url 'comments:comment_update' comment.pk %}" class="text-muted">수정</a>
+                        · <a href="{% url 'comments:comment_delete' comment.pk %}" class="text-muted">삭제</a>
                     {% endif %}
                 {% endif %}
             </div>
@@ -29,7 +29,7 @@
     
     {% if comment.replies.all %}
         {% for reply in comment.replies.all %}
-            {% include "blog/comment_tree.html" with comment=reply depth=depth|add:1 %}
+            {% include "comments/comment_tree.html" with comment=reply depth=depth|add:1 %}
         {% endfor %}
     {% endif %}
 </div>

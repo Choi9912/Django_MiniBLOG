@@ -9,8 +9,8 @@
 <script>
   // 전역 변수로 필요한 데이터를 설정합니다.
   var postId = {{ post.pk }}; 
-  var sharePostUrl = "{% url 'share_post' post.pk %}";
-  var commentCreateUrl = "{% url 'comment_create' post.pk %}";
+  var sharePostUrl = "{% url 'accounts:share_post' post.pk %}";
+  var commentCreateUrl = "{% url 'comments:comment_create' post.pk %}";
   var csrfToken = "{{ csrf_token }}";
 </script>
 <script src="{% static 'blog/js/post_detail.js' %}"></script>
@@ -25,12 +25,12 @@
         <div class="card">
           <div class="card-header bg-white d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-              {% if post.author.profile.profile_picture %}
-                <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author }}" class="rounded-circle mr-3" style="width: 32px; height: 32px; object-fit: cover;">
+              {% if post.author.profile.images %}
+                <img src="{{ post.author.profile.images.url }}" alt="{{ post.author }}" class="rounded-circle mr-3" style="width: 32px; height: 32px; object-fit: cover;">
               {% else %}
                 <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;"></div>
               {% endif %}
-              <a href="{% url 'profile_view' username=post.author.username %}" class="font-weight-bold text-dark">{{ post.author.username }}</a>
+              <a href="{% url 'accounts:profile_view' username=post.author.username %}" class="font-weight-bold text-dark">{{ post.author.username }}</a>
             </div>
             <div>
               {% if user != post.author %}
@@ -77,14 +77,14 @@
             <div class="comments-section">
                 {% for comment in post.comments.all %}
                     {% if not comment.parent_comment %}
-                        {% include "blog/comment_tree.html" with comment=comment depth=0 %}
+                        {% include "comments/comment_tree.html" with comment=comment depth=0 %}
                     {% endif %}
                 {% endfor %}
             </div>
             
             {% if user.is_authenticated %}
             <div class="card-footer bg-white">
-                <form method="post" action="{% url 'comment_create' post.pk %}">
+                <form method="post" action="{% url 'comments:comment_create' post.pk %}">
                     {% csrf_token %}
                     <div class="input-group">
                         <textarea name="content" class="form-control" placeholder="댓글을 입력하세요..."></textarea>

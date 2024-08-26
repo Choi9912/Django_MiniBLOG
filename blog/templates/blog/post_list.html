@@ -23,10 +23,10 @@
         {% for post in posts %}
             <div class="post">
                 <div class="post-header">
-                    <a href="{% url 'profile_view' post.author.username %}" class="profile-link">
+                    <a href="{% url 'accounts:profile_view' post.author.username %}" class="profile-link">
                         <div class="avatar-container">
-                            {% if post.author.profile.profile_picture %}
-                                <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author.username }} Avatar">
+                            {% if post.author.profile.images %}
+                                <img src="{{ post.author.profile.images.url }}" alt="{{ post.author.username }} Avatar">
                             {% else %}
                                 <div class="avatar-placeholder">
                                     {{ post.author.username|first|upper }}

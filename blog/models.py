@@ -1,65 +1,25 @@
-# blog/models.py
 from datetime import timezone
 from django.db import models
 from django.contrib.auth.models import User
-from django.db import models
-from django.contrib.auth.models import User
-from django.dispatch import receiver
+
 from django.urls import reverse
 from imagekit.models import ProcessedImageField
 from imagekit.processors import ResizeToFill
 from django.utils.text import slugify
-from django.db.models.signals import post_save
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
-    birth_date = models.DateField(null=True, blank=True)
-    profile_picture = models.ImageField(upload_to="profile_pics", blank=True)
-    followers = models.ManyToManyField(User, related_name="following", blank=True)
-
-    def __str__(self):
-        return self.user.username
-
-    def is_following(self, user):
-        return self.user.following.filter(user=user).exists()
-
-    def follow(self, user):
-        if not self.is_following(user):
-            user.profile.followers.add(self.user)
-
-    def unfollow(self, user):
-        if self.is_following(user):
-            user.profile.followers.remove(self.user)
-
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
 
 
 class Category(models.Model):
     name = models.CharField(max_length=25, unique=True)
-    slug = models.SlugField(
-        max_length=200, db_index=True, unique=True, allow_unicode=True
-    )
+    slug = models.SlugField(max_length=200, unique=True, allow_unicode=True)
     is_public = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
-        return f"/blog/category/{self.slug}/"
+        return reverse("category_posts", kwargs={"slug": self.slug})
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -69,15 +29,15 @@ class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(max_length=100, unique=True, allow_unicode=True)
 
+    def __str__(self):
+        return self.name
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name, allow_unicode=True)
-        if not self.slug:  # 빈 문자열인 경우를 처리
+        if not self.slug:
             self.slug = "tag"
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
 
     def get_absolute_url(self):
         return reverse("tag_posts", kwargs={"slug": self.slug})
@@ -103,43 +63,26 @@ class Post(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     view_count = models.PositiveIntegerField(default=0)
     likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
-    birthday = models.DateField(null=True, blank=True)
-    location = models.CharField(max_length=100, blank=True)
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
 
     def calculate_popularity(self):
         view_weight = 1
         like_weight = 3
         comment_weight = 2
-
-        popularity = (
+        return (
             self.view_count * view_weight
             + self.likes.count() * like_weight
             + self.comments.count() * comment_weight
         )
-        return popularity
 
     def soft_delete(self):
         self.is_deleted = True
         self.deleted_at = timezone.now()
         self.save()
 
-    def __str__(self):
-        return self.title
-
-
-class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    parent_comment = models.ForeignKey(
-        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
-    )
-    likes = models.ManyToManyField(User, related_name="liked_comments", blank=True)
-    is_removed = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Comment by {self.author.username} on {self.post.title}"
+    def get_absolute_url(self):
+        return reverse("post_detail", kwargs={"pk": self.pk})

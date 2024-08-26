@@ -50,7 +50,7 @@
           </li>
           {% if user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'profile_view' username=user.username %}"><i class="fas fa-user"></i></a>
+              <a class="nav-link" href="{% url 'accounts:profile_view' username=user.username %}"><i class="fas fa-user"></i></a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt"></i></a>

@@ -63,6 +63,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.naver",
     "bootstrap4",
     "blog",
+    "accounts",
+    "comments",
     "widget_tweaks",
     "imagekit",
     "django_summernote",

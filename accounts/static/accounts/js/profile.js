@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
         followBtn.addEventListener('click', function() {
             console.log('Follow button clicked');
             const username = this.dataset.username;
-            fetch(`/blog/follow/${username}/`, {
+            fetch(`/accounts/follow/${username}/`, {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),
@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.is_following) {
-                    this.textContent = 'Unfollow';
+                    this.textContent = '팔로우';
                 } else {
-                    this.textContent = 'Follow';
+                    this.textContent = '언팔로우';
                 }
                 document.getElementById('follower-count').textContent = data.follower_count;
             })
