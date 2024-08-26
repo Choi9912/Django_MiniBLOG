@@ -1,25 +1,20 @@
-# Stage 1: Build
-FROM python:3.11-slim AS builder
-WORKDIR /usr/src/app
-
-# Install dependencies
-COPY requirements.txt ./
-RUN pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
-
-# Stage 2: Run
 FROM python:3.11-slim
+
+# 패키지 설치
+RUN apt-get update && apt-get install -y git && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 작업 디렉토리 설정
 WORKDIR /usr/src/app
 
-# Copy only necessary files from the build stage
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+# requirements.txt 파일 복사
+COPY requirements.txt .
+
+# 패키지 설치
+RUN pip install --no-cache-dir -r requirements.txt && pip install --no-cache-dir gunicorn
+
+# 나머지 소스 코드 복사
 COPY . .
 
-# Install Gunicorn
-RUN pip install --no-cache-dir gunicorn
-
-# Expose port
-EXPOSE 8000
-
-# Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "blog_project.wsgi:application"]
+# 서버 실행 명령어
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

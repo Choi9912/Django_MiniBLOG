@@ -27,7 +27,7 @@ urlpatterns = [
         name="post_update",
     ),
     path("post/<int:pk>/delete/", PostView.Delete.as_view(), name="post_delete"),
-    path("post/<int:pk>/like/", PostView.LikeToggle.as_view(), name="post_like_toggle"),
+    path("post/<int:pk>/like/", PostView.LikeToggle.as_view(), name="like_post"),
     path("search/", PostView.Search.as_view(), name="post_search"),
     # Comment URLs
     path(

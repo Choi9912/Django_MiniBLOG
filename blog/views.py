@@ -94,12 +94,7 @@ class ProfileView:
 
         def get(self, request, *args, **kwargs):
             self.object = self.get_object()
-            if self.object is None:
-                messages.error(
-                    request,
-                    f"사용자 '{self.kwargs.get('username')}'를 찾을 수 없습니다.",
-                )
-                return render(request, "accounts/profile_not_found.html", status=404)
+
             context = self.get_context_data(object=self.object)
             return self.render_to_response(context)
 
@@ -266,9 +261,11 @@ class PostView:
             context["categories"] = Category.objects.all()
             return context
 
-    class LikeToggle(LoginRequiredMixin, View):
-        @method_decorator(require_POST)
+    class LikeToggle(View):
         def post(self, request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                return JsonResponse({"error": "login_required"}, status=401)
+
             post = get_object_or_404(Post, pk=kwargs["pk"])
             user = request.user
 

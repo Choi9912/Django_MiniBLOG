@@ -10,7 +10,6 @@
 {% block head %}
 <link rel="stylesheet" href="{% static 'blog/css/post_list.css' %}">
 <script src="{% static 'blog/js/post_list.js' %}"></script>
-
 {% endblock %}
 
 {% block content %}
@@ -25,27 +24,31 @@
             <div class="post">
                 <div class="post-header">
                     <a href="{% url 'profile_view' post.author.username %}" class="profile-link">
-                        {% if post.author.profile.profile_picture %}
-                            <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author.username }} Avatar" class="avatar">
-                        {% else %}
-                            <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;"></div>
-                        {% endif %}
+                        <div class="avatar-container">
+                            {% if post.author.profile.profile_picture %}
+                                <img src="{{ post.author.profile.profile_picture.url }}" alt="{{ post.author.username }} Avatar">
+                            {% else %}
+                                <div class="avatar-placeholder">
+                                    {{ post.author.username|first|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
                         <span class="username">{{ post.author.username }}</span>
                     </a>
                 </div>
-
-                <div class="post-image">
-                    <a href="{% url 'post_detail' post.pk %}">
+                
+                <a href="{% url 'post_detail' post.pk %}" class="post-image-link">
+                    <div class="post-image">
                         {% if post.head_image %}
-                            <img src="{{ post.head_image.url }}" alt="{{ post.title }}" class="resized-post-image">
+                            <img src="{{ post.head_image.url }}" alt="{{ post.title }}">
                         {% else %}
-                            <img src="https://via.placeholder.com/300x300" alt="No Image" class="resized-post-image">
+                            <div class="image-placeholder">No Image</div>
                         {% endif %}
-                    </a>
-                </div>
+                    </div>
+                </a>
 
                 <div class="post-actions">
-                    <form action="{% url 'post_like_toggle' post.pk %}" method="POST" class="like-form">
+                    <form method="post" action="{% url 'like_post' post.pk %}" class="like-form">
                         {% csrf_token %}
                         <button type="submit" class="like-button {% if user in post.likes.all %}liked{% endif %}">
                             <svg class="heart-icon" viewBox="0 0 48 48" width="24" height="24">
@@ -60,7 +63,6 @@
                 <div class="post-caption">
                     <strong>{{ post.author.username }}</strong>
                     <p>{{ post.title }}</p>
-
                     <div class="tags">
                         {% if post.tags.all %}
                             {% for tag in post.tags.all %}
@@ -76,16 +78,18 @@
     <div class="pagination">
         <span class="step-links">
             {% if page_obj.has_previous %}
-                <a href="?page=1">« first</a>
+                <a href="?page=1">&laquo; first</a>
                 <a href="?page={{ page_obj.previous_page_number }}">previous</a>
             {% endif %}
-            <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
             {% if page_obj.has_next %}
                 <a href="?page={{ page_obj.next_page_number }}">next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">last »</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
             {% endif %}
         </span>
     </div>
-
-
 {% endblock %}

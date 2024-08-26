@@ -188,20 +188,3 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = "media"
 
 MODEL_DIR = os.path.join(BASE_DIR, "models")
-
-SUMMERNOTE_CONFIG = {
-    "iframe": True,
-    "summernote": {
-        "width": "100%",
-        "height": "480",
-        "toolbar": [
-            ["style", ["style"]],
-            ["font", ["bold", "underline", "clear"]],
-            ["color", ["color"]],
-            ["para", ["ul", "ol", "paragraph"]],
-            ["table", ["table"]],
-            ["insert", ["link", "picture", "video"]],
-            ["view", ["fullscreen", "codeview", "help"]],
-        ],
-    },
-}

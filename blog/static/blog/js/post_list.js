@@ -11,19 +11,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('login_required');
+                    }
+                    throw new Error('HTTP error ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
-                likesCountElement.textContent = `${data.likes_count} likes`;
-                if (data.liked) {
-                    likeButton.classList.add('liked');
+                if (data.error === 'login_required') {
+                    alert('로그인을 해주세요');
                 } else {
-                    likeButton.classList.remove('liked');
+                    likesCountElement.textContent = `${data.likes_count} likes`;
+                    if (data.liked) {
+                        likeButton.classList.add('liked');
+                    } else {
+                        likeButton.classList.remove('liked');
+                    }
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                if (error.message === 'login_required') {
+                    alert('로그인을 해주세요');
+                } else {
+                    console.error('Error:', error);
+                }
+            });
         });
     });
 });
