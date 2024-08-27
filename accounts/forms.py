@@ -29,16 +29,6 @@ class ProfileForm(forms.ModelForm):
         if self.instance and self.instance.user:
             self.fields["username"].initial = self.instance.user.username
 
-    def clean_username(self):
-        username = self.cleaned_data["username"]
-        if (
-            User.objects.filter(username=username)
-            .exclude(pk=self.instance.user.pk)
-            .exists()
-        ):
-            raise forms.ValidationError("이미 사용 중인 사용자 이름입니다.")
-        return username
-
     def save(self, commit=True):
         profile = super().save(commit=False)
         user = profile.user

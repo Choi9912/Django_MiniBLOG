@@ -12,11 +12,9 @@ from django.views.generic import (
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, Count, F, ExpressionWrapper, fields
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from datetime import timedelta
-import markdown2
 import re
 
 
@@ -113,13 +111,10 @@ class PostDetailView(PopularPostsMixin, BasePostView, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.object
-        content_html = markdown2.markdown(
-            post.content, extras=["fenced-code-blocks", "tables"]
-        )
         content_with_links = re.sub(
             r"#(\w+)",
             lambda m: f'<a href="{reverse("tag_posts", kwargs={"slug": m.group(1)})}" class="tag-link">#{m.group(1)}</a>',
-            content_html,
+            post.content,
         )
         context["content"] = content_with_links
         return context
@@ -225,15 +220,14 @@ class CategoryListView(BaseCategoryView, ListView):
         return context
 
 
-class CategoryPostListView(ListView):
-    model = Post
+class CategoryPostListView(BasePostView, ListView):
     template_name = "blog/category_posts.html"
     context_object_name = "posts"
     paginate_by = 6
 
     def get_queryset(self):
         self.category = get_object_or_404(Category, slug=self.kwargs["slug"])
-        return Post.objects.filter(category=self.category).order_by("-created_at")
+        return self.model.objects.filter(category=self.category).order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -252,8 +246,7 @@ class TagListView(BaseTagView, ListView):
         return context
 
 
-class TagPostListView(ListView):
-    model = Post
+class TagPostListView(BasePostView, ListView):
     template_name = "blog/tag_posts.html"
     context_object_name = "posts"
     paginate_by = 5
@@ -261,9 +254,9 @@ class TagPostListView(ListView):
     def get_queryset(self):
         tag_slug = self.kwargs.get("slug")
         if not tag_slug:
-            return Post.objects.none()
+            return self.model.objects.none()
         self.tag = get_object_or_404(Tag, slug=tag_slug)
-        return Post.objects.filter(tags=self.tag).order_by("-created_at")
+        return self.model.objects.filter(tags=self.tag).order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

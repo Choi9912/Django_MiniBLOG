@@ -1,11 +1,14 @@
 from datetime import timezone
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
 
 from django.urls import reverse
 from imagekit.models import ProcessedImageField
 from imagekit.processors import ResizeToFill
 from django.utils.text import slugify
+
+User = get_user_model()
 
 
 class Category(models.Model):

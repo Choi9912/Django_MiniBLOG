@@ -1,7 +1,7 @@
 from venv import logger
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views import View
 from django.views.generic import (
     DetailView,
@@ -20,7 +20,6 @@ from accounts.forms import ProfileForm
 from accounts.models import Profile
 from blog.models import Post
 
-from allauth.account.views import LoginView
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -32,13 +31,6 @@ class BasePostView:
 
 class BaseProfileView:
     model = Profile
-
-
-class CustomLoginView(LoginView):
-    template_name = "accounts/login.html"
-
-    def get_success_url(self):
-        return reverse("post_list")
 
 
 class ProfileUpdateView(LoginRequiredMixin, BaseProfileView, UpdateView):
@@ -60,23 +52,6 @@ class ProfileUpdateView(LoginRequiredMixin, BaseProfileView, UpdateView):
         context["user_posts"] = Post.objects.filter(author=user).order_by("-created_at")
         context["is_own_profile"] = True
         return context
-
-    def form_valid(self, form):
-        try:
-            new_username = form.cleaned_data["username"]
-            if new_username != self.request.user.username:
-                if User.objects.filter(username=new_username).exists():
-                    form.add_error("username", "이미 사용 중인 사용자 이름입니다.")
-                    return self.form_invalid(form)
-                self.request.user.username = new_username
-                self.request.user.save()
-
-            response = super().form_valid(form)
-            messages.success(self.request, "프로필이 성공적으로 업데이트되었습니다.")
-            return response
-        except IntegrityError:
-            form.add_error("username", "사용자 이름 업데이트 중 오류가 발생했습니다.")
-            return self.form_invalid(form)
 
 
 class ProfileDetailView(BaseProfileView, DetailView):
@@ -118,7 +93,7 @@ class FollowToggleView(LoginRequiredMixin, View):
 
         if user == user_to_follow:
             logger.warning(f"User {user.username} attempted to follow themselves")
-            return JsonResponse({"error": "Cannot follow yourself"}, status=400)
+            return JsonResponse({"error": "자신을 팔로우 할 수 없습니다"}, status=400)
 
         if user.profile.is_following(user_to_follow):
             user.profile.unfollow(user_to_follow)
