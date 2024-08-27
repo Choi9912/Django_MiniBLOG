@@ -1,0 +1,48 @@
+{% extends "blog/base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+{% load static %}
+
+{% block head_title %}{% trans "회원가입" %}{% endblock %}
+
+{% block head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'accounts/css/signup.css' %}">
+>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6 signup-container">
+      <h1 class="signup-title">{% trans "회원가입" %}</h1>
+      <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="{{ form.username.id_for_label }}">사용자 :</label>
+          {{ form.username }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.email.id_for_label }}">이메일 :</label>
+          {{ form.email }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.password1.id_for_label }}">비밀번호 :</label>
+          {{ form.password1 }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.password2.id_for_label }}">비밀번호 확인:</label>
+          {{ form.password2 }}
+        </div>
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+        {% endif %}
+        <button class="btn btn-primary btn-signup" type="submit">{% trans "가입하기" %}</button>
+      </form>
+      <p class="login-link">
+        {% blocktrans %}이미 계정이 있으신가요? <a href="{{ login_url }}">로그인</a>{% endblocktrans %}
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

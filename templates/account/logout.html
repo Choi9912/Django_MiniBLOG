@@ -1,0 +1,30 @@
+{% extends "blog/base.html" %}
+{% load i18n %}
+{% load account socialaccount %}
+{% load static %}
+
+{% block head_title %}{% trans "로그아웃" %}{% endblock %}
+
+{% block head %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'accounts/css/logout.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6 logout-container">
+      <h1 class="logout-title">{% trans "로그아웃" %}</h1>
+      <p class="logout-message">{% trans '정말로 로그아웃 하시겠습니까?' %}</p>
+      <form method="post" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+        {% endif %}
+        <button type="submit" class="btn-logout">{% trans '로그아웃' %}</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
