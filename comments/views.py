@@ -4,7 +4,6 @@ from django.views.generic import (
     DeleteView,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse
 from django.shortcuts import get_object_or_404, redirect
 
 from comments.forms import CommentForm
@@ -25,9 +24,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         form.instance.author = self.request.user
         form.instance.post = self.get_post()
         return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -58,9 +54,6 @@ class CommentDeleteView(
         comment = self.get_object()
         return self.request.user == comment.author
 
-    def get_success_url(self):
-        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
-
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         success_url = self.get_success_url()
@@ -87,9 +80,6 @@ class ReplyCreateView(LoginRequiredMixin, BaseCommentView, CreateView):
         form.instance.parent_comment = self.parent_comment
         return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["parent_comment"] = self.parent_comment
@@ -104,9 +94,6 @@ class ReplyDeleteView(
     def test_func(self):
         comment = self.get_object()
         return self.request.user == comment.author
-
-    def get_success_url(self):
-        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()

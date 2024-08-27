@@ -112,13 +112,14 @@ SITE_ID = 1
 # Allauth 설정
 LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+
 # 중간 확인 페이지 건너뛰기 설정
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
 # 이메일 인증 건너뛰기 설정 (선택사항)
 SOCIALACCOUNT_AUTO_SIGNUP = False  # 소셜 계정으로 로그인 시 자동으로 회원가입을 진행합
 SOCIALACCOUNT_EMAIL_REQUIRED = False  # 소셜 계정에서 이메일을 필수로 요구하지 않습니다.
-ACCOUNT_EMAIL_REQUIRED = True  #  일반 계정에서도 이메일을 필수로 요구하지 않습니다.
+ACCOUNT_EMAIL_REQUIRED = True  # 일반 계정에서도 이메일을 필수로 요구하지 않습니다.
 ACCOUNT_USERNAME_REQUIRED = True  # 사용자 이름을 필수로 요구하지 않습니다.
 SOCIALACCOUNT_QUERY_EMAIL = False  # 소셜 제공자에게 이메일 정보를 요청하지 않습니다
 
@@ -185,8 +186,6 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 STATIC_URL = "/static/"
-STATIC_ROOT = "static"
+STATIC_ROOT = BASE_DIR / "static"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = "media"
-
-MODEL_DIR = os.path.join(BASE_DIR, "models")
+MEDIA_ROOT = BASE_DIR / "media"

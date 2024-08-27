@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 from blog.models import Post
 from django.contrib.auth import get_user_model
@@ -20,3 +21,6 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post.title}"
+
+    def get_absolute_url(self):
+        return reverse("post_detail", kwargs={"pk": self.post.pk})

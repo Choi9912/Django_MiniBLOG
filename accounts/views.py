@@ -1,32 +1,18 @@
-from venv import logger
+import logging
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import (
-    DetailView,
-    UpdateView,
-)
+from django.views.generic import DetailView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.db.models import Count, Sum
 
-from django.db import IntegrityError
-
-from accounts.forms import ProfileForm
-from accounts.models import Profile
+from .forms import ProfileForm
+from .models import Profile, User
 from blog.models import Post
 
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-
-class BasePostView:
-    model = Post
+logger = logging.getLogger(__name__)
 
 
 class BaseProfileView:
@@ -39,12 +25,6 @@ class ProfileUpdateView(LoginRequiredMixin, BaseProfileView, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user.profile
-
-    def get_success_url(self):
-        return reverse(
-            "accounts:profile_view",
-            kwargs={"username": self.request.user.username},
-        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -60,25 +40,17 @@ class ProfileDetailView(BaseProfileView, DetailView):
 
     def get_object(self, queryset=None):
         username = self.kwargs.get("username")
-        user = get_object_or_404(User, username=username)
-        profile, _ = Profile.objects.get_or_create(user=user)
-        return profile
+        return get_object_or_404(Profile, user__username=username)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.object:
-            user = self.object.user
-            context["user_posts"] = Post.objects.filter(author=user).order_by(
-                "-created_at"
-            )
-            context["is_own_profile"] = self.request.user == user
-
-            if self.request.user.is_authenticated and not context["is_own_profile"]:
-                context["is_following"] = self.request.user.profile.followers.filter(
-                    id=user.id
-                ).exists()
-            else:
-                context["is_following"] = False
+        user = self.object.user
+        context["user_posts"] = Post.objects.filter(author=user).order_by("-created_at")
+        context["is_own_profile"] = self.request.user == user
+        if self.request.user.is_authenticated and not context["is_own_profile"]:
+            context["is_following"] = self.request.user.profile.is_following(user)
+        else:
+            context["is_following"] = False
         return context
 
 
@@ -95,14 +67,9 @@ class FollowToggleView(LoginRequiredMixin, View):
             logger.warning(f"User {user.username} attempted to follow themselves")
             return JsonResponse({"error": "자신을 팔로우 할 수 없습니다"}, status=400)
 
-        if user.profile.is_following(user_to_follow):
-            user.profile.unfollow(user_to_follow)
-            is_following = False
-            logger.info(f"{user.username} unfollowed {user_to_follow.username}")
-        else:
-            user.profile.follow(user_to_follow)
-            is_following = True
-            logger.info(f"{user.username} followed {user_to_follow.username}")
+        is_following = user.profile.toggle_follow(user_to_follow)
+        action = "followed" if is_following else "unfollowed"
+        logger.info(f"{user.username} {action} {user_to_follow.username}")
 
         return JsonResponse(
             {
@@ -112,28 +79,12 @@ class FollowToggleView(LoginRequiredMixin, View):
         )
 
 
-def share_post(cls, request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    return render(request, "blog/share_post.html", {"post": post})
-
-
 @login_required
 def user_dashboard(request):
-    user_posts = Post.objects.filter(author=request.user)
-    post_count = user_posts.count()
-    total_views = user_posts.aggregate(total_views=Sum("view_count"))["total_views"]
-    total_likes = user_posts.annotate(like_count=Count("likes")).aggregate(
-        total_likes=Sum("like_count")
-    )["total_likes"]
-    follower_count = request.user.profile.followers.count()
+    stats = request.user.profile.get_stats()
+    return render(request, "accounts/user_dashboard.html", stats)
 
-    return render(
-        request,
-        "accounts/user_dashboard.html",
-        {
-            "post_count": post_count,
-            "total_views": total_views,
-            "total_likes": total_likes,
-            "follower_count": follower_count,
-        },
-    )
+
+def share_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    return render(request, "blog/share_post.html", {"post": post})

@@ -139,20 +139,14 @@ class PostUpdateView(LoginRequiredMixin, BasePostView, UpdateView):
     form_class = CustomPostForm
     template_name = "blog/post_form.html"
 
-    def get_success_url(self):
-        return reverse("post_detail", kwargs={"pk": self.object.pk})
-
 
 class PostDeleteView(LoginRequiredMixin, BasePostView, DeleteView):
     template_name = "blog/post_confirm_delete.html"
     success_url = reverse_lazy("post_list")
 
     def form_valid(self, form):
-        success_url = self.get_success_url()
-        self.object.is_deleted = True
-        self.object.deleted_at = timezone.now()
-        self.object.save()
-        return redirect(success_url)
+        self.object.soft_delete()
+        return redirect(self.success_url)
 
 
 class PostSearchView(BasePostView, ListView):
@@ -164,27 +158,30 @@ class PostSearchView(BasePostView, ListView):
         query = self.request.GET.get("q", "")
         search_type = self.request.GET.get("type", "all")
 
+        queryset = Post.objects.all()
+
         if query:
-            if search_type == "title":
-                return Post.objects.filter(title__icontains=query)
+            if search_type == "title_content":
+                queryset = queryset.filter(
+                    Q(title__icontains=query) | Q(content__icontains=query)
+                )
             elif search_type == "tag":
-                return Post.objects.filter(tags__name__icontains=query).distinct()
+                queryset = queryset.filter(tags__name__icontains=query).distinct()
             elif search_type == "category":
-                return Post.objects.filter(category__name__icontains=query).distinct()
-            else:
-                return Post.objects.filter(
+                queryset = queryset.filter(category__name__icontains=query)
+            elif search_type == "all":
+                queryset = queryset.filter(
                     Q(title__icontains=query)
                     | Q(content__icontains=query)
                     | Q(tags__name__icontains=query)
                     | Q(category__name__icontains=query)
                 ).distinct()
-        return Post.objects.none()
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["query"] = self.request.GET.get("q", "")
         context["search_type"] = self.request.GET.get("type", "all")
-        context["categories"] = Category.objects.all()
         return context
 
 
@@ -252,11 +249,8 @@ class TagPostListView(BasePostView, ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        tag_slug = self.kwargs.get("slug")
-        if not tag_slug:
-            return self.model.objects.none()
-        self.tag = get_object_or_404(Tag, slug=tag_slug)
-        return self.model.objects.filter(tags=self.tag).order_by("-created_at")
+        self.tag = get_object_or_404(Tag, slug=self.kwargs.get("slug"))
+        return Post.objects.filter(tags=self.tag).order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -270,5 +264,5 @@ class TagDetailView(BaseTagView, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["posts"] = Post.objects.filter(tags=self.object)
+        context["posts"] = self.object.get_posts()
         return context
