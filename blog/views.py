@@ -41,12 +41,16 @@ class BaseTagView:
 
 class PopularPostsMixin:
     def get_popular_posts(self):
-        return Post.objects.annotate(
-            popularity=ExpressionWrapper(
-                F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
-                output_field=fields.IntegerField(),
+        return (
+            Post.objects.filter(is_deleted=False)
+            .annotate(
+                popularity=ExpressionWrapper(
+                    F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
+                    output_field=fields.IntegerField(),
+                )
             )
-        ).order_by("-popularity")[:5]
+            .order_by("-popularity")[:5]
+        )
 
     def get_weekly_ranking(self):
         yesterday = timezone.now().date() - timedelta(days=1)
@@ -54,7 +58,9 @@ class PopularPostsMixin:
 
         return (
             Post.objects.filter(
-                created_at__date__gt=seven_days_ago, created_at__date__lte=yesterday
+                is_deleted=False,
+                created_at__date__gt=seven_days_ago,
+                created_at__date__lte=yesterday,
             )
             .annotate(
                 weekly_score=ExpressionWrapper(
@@ -143,10 +149,6 @@ class PostUpdateView(LoginRequiredMixin, BasePostView, UpdateView):
 class PostDeleteView(LoginRequiredMixin, BasePostView, DeleteView):
     template_name = "blog/post_confirm_delete.html"
     success_url = reverse_lazy("post_list")
-
-    def form_valid(self, form):
-        self.object.soft_delete()
-        return redirect(self.success_url)
 
 
 class PostSearchView(BasePostView, ListView):

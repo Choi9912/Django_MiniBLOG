@@ -44,9 +44,6 @@ class CustomPostForm(forms.ModelForm):
             "head_image": forms.ClearableFileInput(
                 attrs={"class": "form-control-file"}
             ),
-            "file_upload": forms.ClearableFileInput(
-                attrs={"class": "form-control-file"}
-            ),
         }
 
     def clean_tags(self):

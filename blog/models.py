@@ -1,9 +1,7 @@
 from django.utils import timezone
 from django.db import models
-from django.contrib.contenttypes.fields import GenericRelation
 
 from django.contrib.auth import get_user_model
-
 
 from django.urls import reverse
 from imagekit.models import ProcessedImageField
@@ -16,9 +14,6 @@ User = get_user_model()
 class Category(models.Model):
     name = models.CharField(max_length=25, unique=True)
     slug = models.SlugField(max_length=200, unique=True, allow_unicode=True)
-    is_public = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -48,7 +43,25 @@ class Tag(models.Model):
         return reverse("tag_posts", kwargs={"slug": self.slug})
 
 
-class Post(models.Model):
+class SoftDeleteModel(models.Model):
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def restore(self, *args, **kwargs):
+        self.is_deleted = False
+        self.deleted_at = None
+        self.save()
+
+    class Meta:
+        abstract = True
+
+
+class Post(SoftDeleteModel):
     title = models.CharField(max_length=200)
     content = models.TextField()
     head_image = ProcessedImageField(
@@ -59,35 +72,28 @@ class Post(models.Model):
         blank=True,
     )
     file_upload = models.FileField(upload_to="blog/files/%Y/%m/%d/", blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.ForeignKey(
-        Category, null=True, blank=True, on_delete=models.SET_NULL
+        "Category", null=True, blank=True, on_delete=models.SET_NULL
     )
-    tags = models.ManyToManyField(Tag, blank=True)
+    tags = models.ManyToManyField("Tag", blank=True)
     view_count = models.PositiveIntegerField(default=0)
     likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
-    is_deleted = models.BooleanField(default=False)
-    deleted_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
 
     def calculate_popularity(self):
-        view_weight = 1
         like_weight = 3
         comment_weight = 2
         return (
-            self.view_count * view_weight
-            + self.likes.count() * like_weight
-            + self.comments.count() * comment_weight
+            self.likes.count() * like_weight
+            + self.comment_set.count()
+            * comment_weight  # comment_set을 사용하여 댓글 수 계산
         )
-
-    def soft_delete(self):
-        self.is_deleted = True
-        self.deleted_at = timezone.now()
-        self.save()
 
     def get_absolute_url(self):
         return reverse("post_detail", kwargs={"pk": self.pk})

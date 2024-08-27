@@ -73,7 +73,13 @@
                         <span class="like-count">{{ post.likes.count }}</span> 
                     </button>
                 </form>
-            </div>
+                <a href="{% url 'accounts:share_post' post.id %}" class="btn btn-share">
+                  <svg class="share-icon" viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M21 12l-7-7v4C7 10 4 15 3 20c2.5-3.5 6-5.1 11-5.1V19l7-7z"/>
+                  </svg>
+                  공유하기
+                </a>             
+              </div>
             <div class="comments-section">
                 {% for comment in post.comments.all %}
                     {% if not comment.parent_comment %}

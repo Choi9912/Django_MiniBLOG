@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.error === 'login_required') {
                     throw new Error('login_required');
                 }
-                likesCountElement.textContent = `${data.likes_count} likes`;
+                likesCountElement.textContent = `${data.likes_count} `;
                 if (data.liked) {
                     likeButton.classList.add('liked');
                 } else {

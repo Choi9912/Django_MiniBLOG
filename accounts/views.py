@@ -40,12 +40,16 @@ class ProfileDetailView(BaseProfileView, DetailView):
 
     def get_object(self, queryset=None):
         username = self.kwargs.get("username")
-        return get_object_or_404(Profile, user__username=username)
+        user = get_object_or_404(User, username=username)
+        profile, _ = Profile.objects.get_or_create(user=user)
+        return profile
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.object.user
-        context["user_posts"] = Post.objects.filter(author=user).order_by("-created_at")
+        context["user_posts"] = Post.objects.filter(
+            author=user, is_deleted=False
+        ).order_by("-created_at")
         context["is_own_profile"] = self.request.user == user
         if self.request.user.is_authenticated and not context["is_own_profile"]:
             context["is_following"] = self.request.user.profile.is_following(user)
