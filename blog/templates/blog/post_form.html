@@ -3,7 +3,10 @@
 {% load static %}
 
 {% block title %}{% if form.instance.pk %}Edit Post{% else %}New Post{% endif %}{% endblock %}
-
+{% block head %}
+<link rel="stylesheet" href="{% static 'blog/css/post_form_instagram.css' %}">
+<script src="{% static 'blog/js/post_form.js' %}"></script>
+{% endblock %}
 {% block extra_head %}
 {{ form.media }}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -12,154 +15,43 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-10 col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                    <h2 class="mb-4 text-center">{% if form.instance.pk %}블로그 수정{% else %}블로그 생성{% endif %}</h2>
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.title.id_for_label }}" class="form-label">제목</label>
-                            <div class="input-group">
-                                {% render_field form.title class="form-control" placeholder="제목을 입력해주세요" %}
-                            </div>
-                            
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
-                            {% render_field form.category class="form-select" %}
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.content.id_for_label }}" class="form-label">본문</label>
-                            {{ form.content }}
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.tags.id_for_label }}" class="form-label">Tags</label>
-                            {% render_field form.tags class="form-control" %}
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="{{ form.head_image.id_for_label }}" class="form-label">썸네일</label>
-                            {% render_field form.head_image class="form-control" %}
-                        </div>
-                        
-                        {% if form.birthday %}
-                        <div class="mb-4">
-                            <label for="{{ form.birthday.id_for_label }}" class="form-label">Birthday</label>
-                            {% render_field form.birthday class="form-control" type="date" %}
-                        </div>
-                        {% endif %}
-                        
-                        {% if form.location %}
-                        <div class="mb-4">
-                            <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
-                            {{ form.location }}
-                        </div>
-                        {% endif %}
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update{% else %}Share{% endif %}</button>
-                        </div>
-                    </form>
-                </div>
+<div class="container">
+    <div class="post-form-container">
+        <h2 class="form-title">{% if form.instance.pk %}Edit Post{% else %}New Post{% endif %}</h2>
+        <form method="post" enctype="multipart/form-data" class="instagram-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">제목</label>
+                {% render_field form.title class="form-control" placeholder="Write a catchy title..." %}
+                <button type="button" id="autoCompleteBtn" class="btn btn-auto-complete">제목 자동완성</button>
             </div>
-        </div>
+
+            <div class="form-group">
+                <label for="{{ form.category.id_for_label }}">카테고리</label>
+                {% render_field form.category class="form-control" %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.content.id_for_label }}">본문</label>
+                {{ form.content }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.tags.id_for_label }}">태그</label>
+                {% render_field form.tags class="form-control" placeholder="Add tags..." %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.head_image.id_for_label }}">Thumbnail</label>
+                {% render_field form.head_image class="form-control-file" %}
+            </div>
+            
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Update{% else %}Share{% endif %}</button>
+            </div>
+        </form>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoaded event fired');
-
-    // Initialize Select2 for tags
-    initializeTagsField();
-
-    // Title suggestion functionality
-    initializeTitleSuggestion();
-
-    function initializeTagsField() {
-        const tagsField = document.getElementById('id_tags');
-        if (tagsField) {
-            $(tagsField).select2({
-                tags: true,
-                tokenSeparators: [',', ' '],
-                placeholder: "Enter tags",
-            });
-        } else {
-            console.warn('Tags field not found. Element ID: id_tags');
-        }
-    }
-
-    function initializeTitleSuggestion() {
-        const titleInput = document.getElementById('id_title');
-        const suggestButton = document.getElementById('suggest-title');
-        const suggestedTitleDiv = document.getElementById('suggested-title');
-        const suggestedTitleText = document.getElementById('suggested-title-text');
-        const useSuggestedTitleButton = document.getElementById('use-suggested-title');
-
-        if (titleInput && suggestButton && suggestedTitleDiv && suggestedTitleText && useSuggestedTitleButton) {
-            suggestButton.addEventListener('click', function() {
-                const title = titleInput.value.trim();
-                const content = document.getElementById('id_content').value.trim();
-                if (content.length > 0) {
-                    fetchSuggestedTitle(title, content);
-                } else {
-                    alert('Please enter some content before requesting a title suggestion.');
-                }
-            });
-
-            useSuggestedTitleButton.addEventListener('click', function() {
-                const suggestedTitle = suggestedTitleText.textContent.replace('제안된 제목: ', '');
-                titleInput.value = suggestedTitle;
-                suggestedTitleDiv.style.display = 'none';
-            });
-        } else {
-            console.warn('One or more elements for title suggestion not found');
-        }
-    }
-
-    function fetchSuggestedTitle(title, content) {
-        fetch('/autocomplete-title/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({title: title, content: content})
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.suggested_title && data.suggested_title !== title) {
-                document.getElementById('suggested-title-text').textContent = `제안된 제목: ${data.suggested_title}`;
-                document.getElementById('suggested-title').style.display = 'block';
-            } else {
-                document.getElementById('suggested-title').style.display = 'none';
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    // CSRF 토큰을 가져오는 함수
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-});
-</script>
 {% endblock %}
