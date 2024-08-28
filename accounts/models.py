@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.dispatch import receiver
 from django.urls import reverse
+from blog.models import Post
 
 
 User = get_user_model()
@@ -33,7 +33,6 @@ class Profile(models.Model):
         return reverse("accounts:profile_view", kwargs={"username": self.user.username})
 
     def get_stats(self):
-        from blog.models import Post
 
         user_posts = Post.objects.filter(author=self.user)
         return {

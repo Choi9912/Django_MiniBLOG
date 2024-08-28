@@ -16,6 +16,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from datetime import timedelta
 import re
+from django.db import transaction
 
 
 from accounts.models import Profile
@@ -110,9 +111,18 @@ class PostDetailView(PopularPostsMixin, BasePostView, DetailView):
         obj = super().get_object()
         if obj.is_deleted:
             raise Http404("존재하지 않는 게시글입니다.")
-        obj.view_count += 1
-        obj.save()
         return obj
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.increase_view_count()
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
+    @transaction.atomic
+    def increase_view_count(self):
+        Post.objects.filter(pk=self.object.pk).update(view_count=F("view_count") + 1)
+        self.object.refresh_from_db(fields=["view_count"])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

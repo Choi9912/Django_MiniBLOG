@@ -59,7 +59,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def form_valid(self, form):
         success_url = self.get_success_url()
-        self.object.delete()  # This will use the custom delete method
+        self.object.delete()
         return redirect(success_url)
 
 

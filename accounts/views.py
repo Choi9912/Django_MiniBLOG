@@ -15,6 +15,10 @@ from blog.models import Post
 logger = logging.getLogger(__name__)
 
 
+class BasePostView:
+    model = Post
+
+
 class BaseProfileView:
     model = Profile
 
@@ -28,8 +32,6 @@ class ProfileUpdateView(LoginRequiredMixin, BaseProfileView, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.request.user
-        context["user_posts"] = Post.objects.filter(author=user).order_by("-created_at")
         context["is_own_profile"] = True
         return context
 
