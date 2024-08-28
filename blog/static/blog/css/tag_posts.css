@@ -96,3 +96,20 @@ body {
 .page-link:hover {
     background-color: #f1f1f1;
 }
+
+/* 정렬 옵션 스타일 */
+.sort-options {
+    margin-bottom: 20px;
+}
+.sort-options a {
+    margin-right: 10px;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+}
+.sort-options a.active {
+    background-color: #007bff;
+    color: white;
+}

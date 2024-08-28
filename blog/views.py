@@ -79,13 +79,9 @@ class PopularPostsMixin:
         return context
 
 
-class PostListView(PopularPostsMixin, BasePostView, ListView):
-    template_name = "blog/post_list.html"
-    context_object_name = "posts"
-    paginate_by = 6
-
+class SortPostsMixin:
     def get_queryset(self):
-        queryset = Post.objects.filter(is_deleted=False)
+        queryset = super().get_queryset()
         sort_by = self.request.GET.get("sort", "latest")
         if sort_by == "latest":
             return queryset.order_by("-created_at")
@@ -97,9 +93,22 @@ class PostListView(PopularPostsMixin, BasePostView, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["current_sort"] = self.request.GET.get("sort", "latest")
+        return context
+
+
+class PostListView(SortPostsMixin, PopularPostsMixin, BasePostView, ListView):
+    template_name = "blog/post_list.html"
+    context_object_name = "posts"
+    paginate_by = 6
+
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context["categories"] = Category.objects.all()
         context["tags"] = Tag.objects.all()
-        context["current_sort"] = self.request.GET.get("sort", "latest")
         context["show_sidebar"] = True
         return context
 
@@ -229,14 +238,14 @@ class CategoryListView(BaseCategoryView, ListView):
         return context
 
 
-class CategoryPostListView(BasePostView, ListView):
+class CategoryPostListView(SortPostsMixin, BasePostView, ListView):
     template_name = "blog/category_posts.html"
     context_object_name = "posts"
     paginate_by = 6
 
     def get_queryset(self):
         self.category = get_object_or_404(Category, slug=self.kwargs["slug"])
-        return self.model.objects.filter(category=self.category).order_by("-created_at")
+        return super().get_queryset().filter(category=self.category)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -255,18 +264,18 @@ class TagListView(BaseTagView, ListView):
         return context
 
 
-class TagPostListView(BasePostView, ListView):
+class TagPostListView(SortPostsMixin, BasePostView, ListView):
     template_name = "blog/tag_posts.html"
     context_object_name = "posts"
     paginate_by = 5
 
     def get_queryset(self):
         self.tag = get_object_or_404(Tag, slug=self.kwargs.get("slug"))
-        return Post.objects.filter(tags=self.tag).order_by("-created_at")
+        return super().get_queryset().filter(tags=self.tag)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tag"] = getattr(self, "tag", None)
+        context["tag"] = self.tag
         return context
 
 

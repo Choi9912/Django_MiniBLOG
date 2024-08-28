@@ -42,6 +42,7 @@ h1 {
     color: #6c757d;
 }
 
+
 /* Responsive Design */
 @media (max-width: 767px) {
     .card-title {

@@ -5,6 +5,11 @@
 <link rel="stylesheet" href="{% static 'blog/css/pag_posts.css' %}">
 
 {% block content %}
+<div class="sort-options">
+    <a href="?sort=latest" class="{% if current_sort == 'latest' %}active{% endif %}">최신순</a>
+    <a href="?sort=likes" class="{% if current_sort == 'likes' %}active{% endif %}">좋아요순</a>
+    <a href="?sort=views" class="{% if current_sort == 'views' %}active{% endif %}">조회순</a>
+</div>
 <div class="container mt-4">
     <h2 class="text-center mb-4" style="font-size: 2.5rem; color: #333;">'{{ tag.name }}' 태그 글 목록</h2>
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
