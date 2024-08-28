@@ -1,3 +1,4 @@
+from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
     UpdateView,
@@ -45,24 +46,20 @@ class CommentUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
 
-class CommentDeleteView(
-    LoginRequiredMixin, UserPassesTestMixin, BaseCommentView, DeleteView
-):
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
     template_name = "comments/comment_confirm_delete.html"
 
     def test_func(self):
         comment = self.get_object()
         return self.request.user == comment.author
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
+    def get_success_url(self):
+        return reverse_lazy("post_detail", kwargs={"pk": self.object.post.pk})
+
+    def form_valid(self, form):
         success_url = self.get_success_url()
-        if self.object.replies.exists():
-            self.object.content = "이 댓글은 삭제되었습니다."
-            self.object.is_removed = True
-            self.object.save()
-        else:
-            self.object.delete()
+        self.object.delete()  # This will use the custom delete method
         return redirect(success_url)
 
 
@@ -86,17 +83,18 @@ class ReplyCreateView(LoginRequiredMixin, BaseCommentView, CreateView):
         return context
 
 
-class ReplyDeleteView(
-    LoginRequiredMixin, UserPassesTestMixin, BaseCommentView, DeleteView
-):
+class ReplyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Comment
     template_name = "comments/comment_confirm_delete.html"
 
     def test_func(self):
         comment = self.get_object()
         return self.request.user == comment.author
 
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
+    def form_valid(self, form):
         success_url = self.get_success_url()
         self.object.delete()
         return redirect(success_url)
+
+    def get_success_url(self):
+        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
