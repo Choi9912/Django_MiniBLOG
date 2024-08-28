@@ -1,5 +1,9 @@
 {% extends 'blog/base.html' %}
+{% load static %}
 
+{% block head %}
+<link rel="stylesheet" href="{% static 'blog/css/post_search.css' %}">
+{% endblock %}
 {% block content %}
 <div class="container my-5">
     <h2 class="mb-4 text-center">게시글 검색</h2>
@@ -83,18 +87,5 @@
     {% endif %}
 </div>
 
-<style>
-    body {
-        background-color: #f8f9fa;
-    }
-    .card {
-        transition: transform 0.2s;
-    }
-    .card:hover {
-        transform: translateY(-5px);
-    }
-    .badge {
-        margin-right: 5px;
-    }
-</style>
+
 {% endblock %}

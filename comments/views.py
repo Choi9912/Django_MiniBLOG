@@ -67,6 +67,7 @@ class ReplyCreateView(LoginRequiredMixin, BaseCommentView, CreateView):
     fields = ["content"]
     template_name = "comments/reply_form.html"
 
+    # 부모 객체가 있는지 미리 확인(조회)
     def dispatch(self, request, *args, **kwargs):
         self.parent_comment = get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
         return super().dispatch(request, *args, **kwargs)

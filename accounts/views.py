@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, Count
 
 from .forms import ProfileForm
 from .models import Profile, User
@@ -21,6 +22,22 @@ class BasePostView:
 
 class BaseProfileView:
     model = Profile
+
+
+def get_user_stats(user):
+    user_posts = Post.objects.filter(author=user)
+    return {
+        "post_count": user_posts.count(),
+        "total_views": user_posts.aggregate(total_views=Sum("view_count"))[
+            "total_views"
+        ]
+        or 0,
+        "total_likes": user_posts.annotate(like_count=Count("likes")).aggregate(
+            total_likes=Sum("like_count")
+        )["total_likes"]
+        or 0,
+        "follower_count": user.profile.followers.count(),
+    }
 
 
 class ProfileUpdateView(LoginRequiredMixin, BaseProfileView, UpdateView):
@@ -54,10 +71,14 @@ class ProfileDetailView(BaseProfileView, DetailView):
         ).order_by("-created_at")
         context["is_own_profile"] = self.request.user == user
         if self.request.user.is_authenticated and not context["is_own_profile"]:
-            context["is_following"] = self.request.user.profile.is_following(user)
+            context["is_following"] = self.is_following(self.request.user, user)
         else:
             context["is_following"] = False
+        context["user_stats"] = get_user_stats(user)
         return context
+
+    def is_following(self, user, target_user):
+        return user.following.filter(user=target_user).exists()
 
 
 class FollowToggleView(LoginRequiredMixin, View):
@@ -73,7 +94,7 @@ class FollowToggleView(LoginRequiredMixin, View):
             logger.warning(f"User {user.username} attempted to follow themselves")
             return JsonResponse({"error": "자신을 팔로우 할 수 없습니다"}, status=400)
 
-        is_following = user.profile.toggle_follow(user_to_follow)
+        is_following = self.toggle_follow(user, user_to_follow)
         action = "followed" if is_following else "unfollowed"
         logger.info(f"{user.username} {action} {user_to_follow.username}")
 
@@ -84,10 +105,21 @@ class FollowToggleView(LoginRequiredMixin, View):
             }
         )
 
+    def toggle_follow(self, user, target_user):
+        if self.is_following(user, target_user):
+            target_user.profile.followers.remove(user)
+            return False
+        else:
+            target_user.profile.followers.add(user)
+            return True
+
+    def is_following(self, user, target_user):
+        return user.following.filter(user=target_user).exists()
+
 
 @login_required
 def user_dashboard(request):
-    stats = request.user.profile.get_stats()
+    stats = get_user_stats(request.user)
     return render(request, "accounts/user_dashboard.html", stats)
 
 

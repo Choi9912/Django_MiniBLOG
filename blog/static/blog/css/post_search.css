@@ -1,0 +1,13 @@
+
+body {
+    background-color: #f8f9fa;
+}
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.badge {
+    margin-right: 5px;
+}

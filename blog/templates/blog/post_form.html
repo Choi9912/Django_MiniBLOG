@@ -4,7 +4,7 @@
 
 {% block title %}{% if form.instance.pk %}Edit Post{% else %}New Post{% endif %}{% endblock %}
 {% block head %}
-<link rel="stylesheet" href="{% static 'blog/css/post_form_instagram.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/post_form.css' %}">
 <script src="{% static 'blog/js/post_form.js' %}"></script>
 {% endblock %}
 {% block extra_head %}
@@ -39,7 +39,7 @@
             
             <div class="form-group">
                 <label for="{{ form.tags.id_for_label }}">태그</label>
-                {% render_field form.tags class="form-control" placeholder="Add tags..." %}
+                {% render_field form.tags class="form-control" placeholder="Enter tags like #travel, #food" %}
             </div>
             
             <div class="form-group">

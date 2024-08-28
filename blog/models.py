@@ -86,14 +86,5 @@ class Post(SoftDeleteModel):
     def __str__(self):
         return self.title
 
-    def calculate_popularity(self):
-        like_weight = 3
-        comment_weight = 2
-        return (
-            self.likes.count() * like_weight
-            + self.comment_set.count()
-            * comment_weight  # comment_set을 사용하여 댓글 수 계산
-        )
-
     def get_absolute_url(self):
         return reverse("post_detail", kwargs={"pk": self.pk})

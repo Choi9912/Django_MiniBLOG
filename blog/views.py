@@ -142,6 +142,8 @@ class PostDetailView(PopularPostsMixin, BasePostView, DetailView):
             post.content,
         )
         context["content"] = content_with_links
+        context["view_count"] = post.view_count
+
         return context
 
 
@@ -232,10 +234,8 @@ class CategoryListView(BaseCategoryView, ListView):
     template_name = "blog/category_list.html"
     context_object_name = "categories"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["categories"] = Category.objects.annotate(post_count=Count("post"))
-        return context
+    def get_queryset(self):
+        return Category.objects.annotate(post_count=Count("post"))
 
 
 class CategoryPostListView(SortPostsMixin, BasePostView, ListView):
@@ -247,21 +247,13 @@ class CategoryPostListView(SortPostsMixin, BasePostView, ListView):
         self.category = get_object_or_404(Category, slug=self.kwargs["slug"])
         return super().get_queryset().filter(category=self.category)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["category"] = self.category
-        return context
-
 
 class TagListView(BaseTagView, ListView):
     template_name = "blog/tag_list.html"
     context_object_name = "tags"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        tags = Tag.objects.annotate(post_count=Count("post")).filter(post_count__gt=0)
-        context["tags"] = tags
-        return context
+    def get_queryset(self):
+        return Tag.objects.annotate(post_count=Count("post")).filter(post_count__gt=0)
 
 
 class TagPostListView(SortPostsMixin, BasePostView, ListView):

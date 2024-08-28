@@ -2,8 +2,9 @@
 {% load static %}
 
 {% block title %}{{ tag.name }} - Posts{% endblock %}
-<link rel="stylesheet" href="{% static 'blog/css/pag_posts.css' %}">
-
+{% block head %}
+<link rel="stylesheet" href="{% static 'blog/css/tag_posts.css' %}">
+{% endblock %}
 {% block content %}
 <div class="sort-options">
     <a href="?sort=latest" class="{% if current_sort == 'latest' %}active{% endif %}">최신순</a>

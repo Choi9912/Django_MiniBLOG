@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="{% static 'blog/css/post_detail.css' %}">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  // 전역 변수로 필요한 데이터를 설정합니다.
   var postId = {{ post.pk }}; 
   var sharePostUrl = "{% url 'accounts:share_post' post.pk %}";
   var commentCreateUrl = "{% url 'comments:comment_create' post.pk %}";
@@ -63,6 +62,9 @@
                     No tags
                 {% endfor %}
             </p>
+            <span class="view-count">
+              <i class="fas fa-eye"></i> {{ view_count }} views
+          </span>
         </div>
         <div class="card-footer bg-white">
             <div class="post-actions mt-2 mb-3">
