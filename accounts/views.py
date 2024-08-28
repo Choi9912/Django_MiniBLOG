@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
 
 from .forms import ProfileForm
-from .models import Profile, User
+from .models import Profile, User, Follower
 from blog.models import Post
 
 logger = logging.getLogger(__name__)
@@ -22,6 +22,10 @@ class BasePostView:
 
 class BaseProfileView:
     model = Profile
+
+
+class BaseFollowerView:
+    model = Follower
 
 
 def get_user_stats(user):
@@ -36,7 +40,7 @@ def get_user_stats(user):
             total_likes=Sum("like_count")
         )["total_likes"]
         or 0,
-        "follower_count": user.profile.followers.count(),
+        "follower_count": Follower.objects.filter(user=user).count(),
     }
 
 
@@ -71,17 +75,16 @@ class ProfileDetailView(BaseProfileView, DetailView):
         ).order_by("-created_at")
         context["is_own_profile"] = self.request.user == user
         if self.request.user.is_authenticated and not context["is_own_profile"]:
-            context["is_following"] = self.is_following(self.request.user, user)
+            context["is_following"] = Follower.objects.filter(
+                user=user, follower=self.request.user
+            ).exists()
         else:
             context["is_following"] = False
         context["user_stats"] = get_user_stats(user)
         return context
 
-    def is_following(self, user, target_user):
-        return user.following.filter(user=target_user).exists()
 
-
-class FollowToggleView(LoginRequiredMixin, View):
+class FollowToggleView(LoginRequiredMixin, BaseFollowerView, View):
     @method_decorator(require_POST)
     def post(self, request, username):
         logger.info(
@@ -94,27 +97,27 @@ class FollowToggleView(LoginRequiredMixin, View):
             logger.warning(f"User {user.username} attempted to follow themselves")
             return JsonResponse({"error": "자신을 팔로우 할 수 없습니다"}, status=400)
 
-        is_following = self.toggle_follow(user, user_to_follow)
-        action = "followed" if is_following else "unfollowed"
+        follower, created = self.model.objects.get_or_create(
+            user=user_to_follow, follower=user
+        )
+        if not created:
+            follower.delete()
+            is_following = False
+            action = "unfollowed"
+        else:
+            is_following = True
+            action = "followed"
+
         logger.info(f"{user.username} {action} {user_to_follow.username}")
 
         return JsonResponse(
             {
                 "is_following": is_following,
-                "follower_count": user_to_follow.profile.followers.count(),
+                "follower_count": self.model.objects.filter(
+                    user=user_to_follow
+                ).count(),
             }
         )
-
-    def toggle_follow(self, user, target_user):
-        if self.is_following(user, target_user):
-            target_user.profile.followers.remove(user)
-            return False
-        else:
-            target_user.profile.followers.add(user)
-            return True
-
-    def is_following(self, user, target_user):
-        return user.following.filter(user=target_user).exists()
 
 
 @login_required
