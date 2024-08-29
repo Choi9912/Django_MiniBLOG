@@ -8,12 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404, redirect
 
 from comments.forms import CommentForm
-
 from .models import Post, Comment
-
-
-class BaseCommentView:
-    model = Comment
 
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
@@ -63,11 +58,11 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return redirect(success_url)
 
 
-class ReplyCreateView(LoginRequiredMixin, BaseCommentView, CreateView):
+class ReplyCreateView(LoginRequiredMixin, CreateView):
+    model = Comment
     fields = ["content"]
     template_name = "comments/reply_form.html"
 
-    # 부모 객체가 있는지 미리 확인(조회)
     def dispatch(self, request, *args, **kwargs):
         self.parent_comment = get_object_or_404(Comment, pk=self.kwargs["comment_pk"])
         return super().dispatch(request, *args, **kwargs)
@@ -81,6 +76,18 @@ class ReplyCreateView(LoginRequiredMixin, BaseCommentView, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["parent_comment"] = self.parent_comment
+        return context
+
+
+class ReplyUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Comment
+    fields = ["content"]
+    template_name = "comments/reply_form.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["parent_comment"] = self.object.parent_comment
+        context["post"] = self.object.post
         return context
 
 

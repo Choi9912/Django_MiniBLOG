@@ -16,18 +16,6 @@ from blog.models import Post
 logger = logging.getLogger(__name__)
 
 
-class BasePostView:
-    model = Post
-
-
-class BaseProfileView:
-    model = Profile
-
-
-class BaseFollowerView:
-    model = Follower
-
-
 def get_user_stats(user):
     user_posts = Post.objects.filter(author=user)
     return {
@@ -44,7 +32,8 @@ def get_user_stats(user):
     }
 
 
-class ProfileUpdateView(LoginRequiredMixin, BaseProfileView, UpdateView):
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = Profile
     form_class = ProfileForm
     template_name = "accounts/profile_update.html"
 
@@ -57,7 +46,8 @@ class ProfileUpdateView(LoginRequiredMixin, BaseProfileView, UpdateView):
         return context
 
 
-class ProfileDetailView(BaseProfileView, DetailView):
+class ProfileDetailView(DetailView):
+    model = Profile
     template_name = "accounts/profile.html"
     context_object_name = "profile"
 
@@ -70,21 +60,25 @@ class ProfileDetailView(BaseProfileView, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.object.user
-        context["user_posts"] = Post.objects.filter(
-            author=user, is_deleted=False
-        ).order_by("-created_at")
-        context["is_own_profile"] = self.request.user == user
+        context.update(
+            {
+                "user_posts": Post.objects.filter(
+                    author=user, is_deleted=False
+                ).order_by("-created_at"),
+                "is_own_profile": self.request.user == user,
+                "user_stats": get_user_stats(user),
+            }
+        )
         if self.request.user.is_authenticated and not context["is_own_profile"]:
             context["is_following"] = Follower.objects.filter(
                 user=user, follower=self.request.user
             ).exists()
         else:
             context["is_following"] = False
-        context["user_stats"] = get_user_stats(user)
         return context
 
 
-class FollowToggleView(LoginRequiredMixin, BaseFollowerView, View):
+class FollowToggleView(LoginRequiredMixin, View):
     @method_decorator(require_POST)
     def post(self, request, username):
         logger.info(
@@ -97,7 +91,7 @@ class FollowToggleView(LoginRequiredMixin, BaseFollowerView, View):
             logger.warning(f"User {user.username} attempted to follow themselves")
             return JsonResponse({"error": "자신을 팔로우 할 수 없습니다"}, status=400)
 
-        follower, created = self.model.objects.get_or_create(
+        follower, created = Follower.objects.get_or_create(
             user=user_to_follow, follower=user
         )
         if not created:
@@ -113,9 +107,7 @@ class FollowToggleView(LoginRequiredMixin, BaseFollowerView, View):
         return JsonResponse(
             {
                 "is_following": is_following,
-                "follower_count": self.model.objects.filter(
-                    user=user_to_follow
-                ).count(),
+                "follower_count": Follower.objects.filter(user=user_to_follow).count(),
             }
         )
 

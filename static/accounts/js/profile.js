@@ -16,9 +16,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.is_following) {
-                    this.textContent = '팔로우';
+                    this.textContent = '팔로우 취소';
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-secondary');
                 } else {
-                    this.textContent = '언팔로우';
+                    this.textContent = '팔로우';
+                    this.classList.remove('btn-secondary');
+                    this.classList.add('btn-primary');
                 }
                 document.getElementById('follower-count').textContent = data.follower_count;
             })
@@ -31,7 +35,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Follow button not found');
     }
 });
-
 
 // CSRF 토큰을 가져오는 함수
 function getCookie(name) {
@@ -48,17 +51,3 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-console.log('Profile page loaded');
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded');
-    const followBtn = document.getElementById('follow-btn');
-    if (followBtn) {
-        console.log('Follow button found:', followBtn);
-        followBtn.addEventListener('click', function() {
-            console.log('Follow button clicked');
-            // 기존의 follow 로직
-        });
-    } else {
-        console.log('Follow button not found');
-    }
-});

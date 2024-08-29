@@ -1,8 +1,13 @@
 {% extends 'blog/base.html' %}
 {% load widget_tweaks %}
+{% load static %}
 
 {% block title %}답글 작성{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'comments/css/common.css' %}">
+<link rel="stylesheet" href="{% static 'comments/css/reply_form.css' %}">
 
+{% endblock %}
 {% block content %}
 <div class="container mt-5">
     <div class="row justify-content-center">

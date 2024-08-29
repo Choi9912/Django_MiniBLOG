@@ -1,7 +1,12 @@
 {% extends 'blog/base.html' %}
+{% load static %}
 
 {% block title %}댓글 삭제 확인{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'comments/css/common.css' %}">
+<link rel="stylesheet" href="{% static 'comments/css/comment_confirm_delete.css' %}">
 
+{% endblock %}
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">

@@ -5,6 +5,7 @@ from .views import (
     CommentDeleteView,
     ReplyCreateView,
     ReplyDeleteView,
+    ReplyUpdateView,
 )
 
 app_name = "comments"
@@ -24,5 +25,6 @@ urlpatterns = [
         ReplyCreateView.as_view(),
         name="reply_create",
     ),
+    path("reply/<int:pk>/update/", ReplyUpdateView.as_view(), name="reply_update"),
     path("reply/<int:pk>/delete/", ReplyDeleteView.as_view(), name="reply_delete"),
 ]

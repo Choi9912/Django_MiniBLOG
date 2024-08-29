@@ -1,35 +1,58 @@
 {% load static %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'comments/css/common.css' %}">
+<link rel="stylesheet" href="{% static 'comments/css/comment_tree.css' %}">
+{% endblock %}
 
-<div class="comment {% if depth > 0 %}ml-4{% endif %}">
-    <div class="d-flex align-items-start mb-2">
-        {% if comment.author.profile.profile_picture %}
-            <img src="{{ comment.author.profile.profile_picture.url }}" alt="{{ comment.author.username }} Avatar" class="rounded-circle mr-3" style="width: 32px; height: 32px; object-fit: cover;">
-        {% else %}
-            <div class="rounded-circle mr-3 bg-secondary d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;"></div>
+<div class="comment {% if depth > 0 %}reply ml-4 mt-2{% else %}mb-4{% endif %}">
+    <div class="d-flex align-items-start">
+        {% if not comment.is_removed %}
+            {% if comment.author.profile.profile_picture %}
+                <img src="{{ comment.author.profile.profile_picture.url }}" 
+                     alt="{{ comment.author.username }} Avatar" 
+                     class="rounded-circle mr-2"
+                     style="width: {% if depth == 0 %}40px{% else %}30px{% endif %}; height: {% if depth == 0 %}40px{% else %}30px{% endif %}; object-fit: cover;">
+            {% else %}
+                <div class="rounded-circle mr-2 bg-secondary d-flex align-items-center justify-content-center" 
+                     style="width: {% if depth == 0 %}40px{% else %}30px{% endif %}; height: {% if depth == 0 %}40px{% else %}30px{% endif %};">
+                    <span class="text-white" style="font-size: {% if depth == 0 %}16px{% else %}12px{% endif %};">{{ comment.author.username|first|upper }}</span>
+                </div>
+            {% endif %}
         {% endif %}
-        <div class="comment-content">
+
+        <div class="comment-content" style="font-size: {% if depth == 0 %}14px{% else %}12px{% endif %};">
             <strong>{{ comment.author.username }}</strong>
             {% if comment.is_removed %}
                 <span class="text-muted">이 댓글은 삭제되었습니다.</span>
             {% else %}
-                {{ comment.content }}
+                <span>{{ comment.content }}</span>
             {% endif %}
-            <div class="comment-meta text-muted">
+
+            <div class="comment-meta text-muted" style="font-size: {% if depth == 0 %}12px{% else %}10px{% endif %};">
                 <small>{{ comment.created_at|timesince }} ago</small>
                 {% if user.is_authenticated and not comment.is_removed %}
-                    · <a href="{% url 'comments:reply_create' comment.pk %}" class="text-muted reply-link">답장</a>
+                    {% if depth == 0 %}
+                        · <a href="{% url 'comments:reply_create' comment.pk %}" class="text-muted reply-link">답글</a>
+                    {% endif %}
                     {% if user == comment.author %}
-                        · <a href="{% url 'comments:comment_update' comment.pk %}" class="text-muted">수정</a>
-                        · <a href="{% url 'comments:comment_delete' comment.pk %}" class="text-muted">삭제</a>
+                        {% if depth == 0 %}
+                            · <a href="{% url 'comments:comment_update' comment.pk %}" class="text-muted">수정</a>
+                            · <a href="{% url 'comments:comment_delete' comment.pk %}" class="text-muted">삭제</a>
+                        {% else %}
+                            · <a href="{% url 'comments:reply_update' comment.pk %}" class="text-muted">수정</a>
+                            · <a href="{% url 'comments:reply_delete' comment.pk %}" class="text-muted">삭제</a>
+                        {% endif %}
                     {% endif %}
                 {% endif %}
             </div>
         </div>
     </div>
-    
-    {% if comment.replies.all %}
-        {% for reply in comment.replies.all %}
-            {% include "comments/comment_tree.html" with comment=reply depth=depth|add:1 %}
-        {% endfor %}
+
+    {% if comment.replies.all and depth == 0 %}
+        <div class="replies mt-2" style="border-left: 2px solid #e1e4e8; padding-left: 10px;">
+            {% for reply in comment.replies.all %}
+                {% include "comments/comment_tree.html" with comment=reply depth=1 %}
+            {% endfor %}
+        </div>
     {% endif %}
 </div>

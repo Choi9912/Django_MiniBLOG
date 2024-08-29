@@ -1,0 +1,9 @@
+    .comments-section {
+        margin-top: 40px;
+    }
+    
+    .comment-thread {
+        border-left: 2px solid #e1e4e8;
+        padding-left: 20px;
+        margin-left: 20px;
+    }

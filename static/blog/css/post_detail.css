@@ -8,10 +8,7 @@
 .btn-link {
   color: #262626;
 }
-.like-btn.liked {
-  background-color: #007bff;
-  color: white;
-}
+
 .btn-link:hover {
   color: #262626;
   text-decoration: none;
@@ -40,6 +37,7 @@
   align-items: center;
 }
 
+
 .like-btn {
   background-color: transparent;
   border: none;
@@ -47,12 +45,14 @@
   font-size: 0.8rem;
   color: #262626;
   transition: color 0.3s ease;
+  outline: none; 
 }
 
 .like-btn:hover, .like-btn:focus {
   background-color: transparent;
   color: #ed4956;
   outline: none;
+  box-shadow: none; 
 }
 
 .like-btn i {
@@ -140,4 +140,34 @@
 .comment-form .btn-post:disabled {
   color: #b2dffc;
   cursor: not-allowed;
+}
+
+.btn-share {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #333333;
+  border: 2px solid #333333;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-share:hover {
+  background-color: #333333;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.share-icon {
+  margin-right: 10px;
+  fill: currentColor;
+  transform: rotate(180deg);
+}
+
+.btn-share:hover .share-icon {
+  fill: #ffffff;
 }

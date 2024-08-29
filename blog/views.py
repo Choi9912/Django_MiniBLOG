@@ -18,26 +18,9 @@ from datetime import timedelta
 import re
 from django.db import transaction
 
-
 from accounts.models import Profile
 from .models import Post, Category, Tag
 from blog.forms import CustomPostForm
-
-
-class BasePostView:
-    model = Post
-
-
-class BaseProfileView:
-    model = Profile
-
-
-class BaseCategoryView:
-    model = Category
-
-
-class BaseTagView:
-    model = Tag
 
 
 class PopularPostsMixin:
@@ -97,7 +80,8 @@ class SortPostsMixin:
         return context
 
 
-class PostListView(SortPostsMixin, PopularPostsMixin, BasePostView, ListView):
+class PostListView(SortPostsMixin, PopularPostsMixin, ListView):
+    model = Post
     template_name = "blog/post_list.html"
     context_object_name = "posts"
     paginate_by = 6
@@ -113,7 +97,8 @@ class PostListView(SortPostsMixin, PopularPostsMixin, BasePostView, ListView):
         return context
 
 
-class PostDetailView(PopularPostsMixin, BasePostView, DetailView):
+class PostDetailView(PopularPostsMixin, DetailView):
+    model = Post
     template_name = "blog/post_detail.html"
 
     def get_object(self):
@@ -143,11 +128,11 @@ class PostDetailView(PopularPostsMixin, BasePostView, DetailView):
         )
         context["content"] = content_with_links
         context["view_count"] = post.view_count
-
         return context
 
 
-class PostCreateView(LoginRequiredMixin, BasePostView, CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
     form_class = CustomPostForm
     template_name = "blog/post_form.html"
     success_url = reverse_lazy("post_list")
@@ -162,17 +147,27 @@ class PostCreateView(LoginRequiredMixin, BasePostView, CreateView):
         return context
 
 
-class PostUpdateView(LoginRequiredMixin, BasePostView, UpdateView):
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
     form_class = CustomPostForm
     template_name = "blog/post_form.html"
 
 
-class PostDeleteView(LoginRequiredMixin, BasePostView, DeleteView):
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
     template_name = "blog/post_confirm_delete.html"
     success_url = reverse_lazy("post_list")
 
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+        self.object.is_deleted = True
+        self.object.save()
+        return HttpResponseRedirect(success_url)
 
-class PostSearchView(BasePostView, ListView):
+
+class PostSearchView(ListView):
+    model = Post
     template_name = "blog/post_search.html"
     context_object_name = "posts"
     paginate_by = 10
@@ -208,7 +203,7 @@ class PostSearchView(BasePostView, ListView):
         return context
 
 
-class PostLikeToggleView(BasePostView, View):
+class PostLikeToggleView(View):
     @method_decorator(require_POST)
     def post(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -230,7 +225,8 @@ class PostLikeToggleView(BasePostView, View):
         return JsonResponse({"likes_count": post.likes.count(), "liked": liked})
 
 
-class CategoryListView(BaseCategoryView, ListView):
+class CategoryListView(ListView):
+    model = Category
     template_name = "blog/category_list.html"
     context_object_name = "categories"
 
@@ -238,7 +234,8 @@ class CategoryListView(BaseCategoryView, ListView):
         return Category.objects.annotate(post_count=Count("post"))
 
 
-class CategoryPostListView(SortPostsMixin, BasePostView, ListView):
+class CategoryPostListView(SortPostsMixin, ListView):
+    model = Post
     template_name = "blog/category_posts.html"
     context_object_name = "posts"
     paginate_by = 6
@@ -248,7 +245,8 @@ class CategoryPostListView(SortPostsMixin, BasePostView, ListView):
         return super().get_queryset().filter(category=self.category)
 
 
-class TagListView(BaseTagView, ListView):
+class TagListView(ListView):
+    model = Tag
     template_name = "blog/tag_list.html"
     context_object_name = "tags"
 
@@ -256,7 +254,8 @@ class TagListView(BaseTagView, ListView):
         return Tag.objects.annotate(post_count=Count("post")).filter(post_count__gt=0)
 
 
-class TagPostListView(SortPostsMixin, BasePostView, ListView):
+class TagPostListView(SortPostsMixin, ListView):
+    model = Post
     template_name = "blog/tag_posts.html"
     context_object_name = "posts"
     paginate_by = 5
@@ -271,7 +270,8 @@ class TagPostListView(SortPostsMixin, BasePostView, ListView):
         return context
 
 
-class TagDetailView(BaseTagView, DetailView):
+class TagDetailView(DetailView):
+    model = Tag
     template_name = "blog/tag_detail.html"
     context_object_name = "tag"
 

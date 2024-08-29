@@ -1,7 +1,12 @@
 {% extends 'blog/base.html' %}
+{% load static %}
 
 {% block title %}{% if form.instance.pk %}댓글 수정{% else %}댓글 작성{% endif %}{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'comments/css/common.css' %}">
+<link rel="stylesheet" href="{% static 'comments/css/comment_form.css' %}">
 
+{% endblock %}
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">{% if form.instance.pk %}댓글 수정{% else %}댓글 작성{% endif %}</h2>

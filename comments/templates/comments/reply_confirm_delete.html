@@ -1,7 +1,12 @@
 {% extends 'blog/base.html' %}
+{% load static %}
 
 {% block title %}댓글 삭제 확인{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{% static 'comments/css/common.css' %}">
+<link rel="stylesheet" href="{% static 'comments/css/reply_confirm_delete.css' %}">
 
+{% endblock %}
 {% block content %}
     <h2 class="mb-4">댓글 삭제 확인</h2>
     <p>다음 댓글을 정말 삭제하시겠습니까?</p>

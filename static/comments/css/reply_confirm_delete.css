@@ -1,12 +1,11 @@
-
-.comment-content {
+.reply-content {
     background-color: #f8f9fa;
-    border-left: 4px solid #007bff;
+    border-left: 4px solid #28a745;
     padding: 10px;
     margin-bottom: 20px;
 }
 
-.comment-meta {
+.reply-meta {
     font-style: italic;
     color: #6c757d;
 }
