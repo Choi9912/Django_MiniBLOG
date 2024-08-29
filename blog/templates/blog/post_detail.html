@@ -6,22 +6,17 @@
 {% block head %}
 <link rel="stylesheet" href="{% static 'blog/css/post_detail.css' %}">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-  var postId = {{ post.pk }}; 
-  var sharePostUrl = "{% url 'accounts:share_post' post.pk %}";
-  var commentCreateUrl = "{% url 'comments:comment_create' post.pk %}";
-  var csrfToken = "{{ csrf_token }}";
-</script>
+
 <script src="{% static 'blog/js/post_detail.js' %}"></script>
 {% endblock %}
 
 {% block content %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div class="card">
+<div class="container-fluid mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-33 col-lg-33">
+      <div class="card">
           <div class="card-header bg-white d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
               {% if post.author.profile.images %}

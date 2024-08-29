@@ -47,8 +47,8 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 
-# Application definition
-INSTALLED_APPS = [
+# Django built-in apps
+DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -56,19 +56,30 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+]
+
+# Third-party apps
+THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.kakao",
     "allauth.socialaccount.providers.naver",
     "bootstrap4",
-    "blog",
-    "accounts",
-    "comments",
     "widget_tweaks",
     "imagekit",
     "django_summernote",
 ]
+
+# Local apps
+LOCAL_APPS = [
+    "blog",
+    "accounts",
+    "comments",
+]
+
+# Combine all apps
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 SUMMERNOTE_CONFIG = {
     "summernote": {
@@ -168,10 +179,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ko-kr"
 
-TIME_ZONE = "UTC"
-
+TIME_ZONE = "Asia/Seoul"
 USE_I18N = True
 
 USE_TZ = True
