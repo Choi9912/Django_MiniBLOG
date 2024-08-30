@@ -84,11 +84,18 @@ class ReplyUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     fields = ["content"]
     template_name = "comments/reply_form.html"
 
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["parent_comment"] = self.object.parent_comment
         context["post"] = self.object.post
         return context
+
+    def get_success_url(self):
+        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
 
 
 class ReplyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):

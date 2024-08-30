@@ -285,3 +285,64 @@
         grid-template-columns: 1fr;
     }
 }
+/* 기존 CSS 코드는 유지하고 아래 스타일을 추가합니다 */
+
+.sort-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sort-title {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.sort-options {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.sort-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.sort-button:hover {
+    background-color: #f0f0f0;
+}
+
+.sort-button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.sort-button i {
+    margin-right: 5px;
+}
+
+@media (max-width: 600px) {
+    .sort-options {
+        flex-direction: column;
+    }
+    
+    .sort-button {
+        width: 100%;
+        justify-content: center;
+    }
+}

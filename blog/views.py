@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect, JsonResponse, Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import (
     ListView,
@@ -17,8 +17,6 @@ from django.views.decorators.http import require_POST
 from datetime import timedelta
 import re
 from django.db import transaction
-
-from accounts.models import Profile
 from .models import Post, Category, Tag
 from blog.forms import CustomPostForm
 

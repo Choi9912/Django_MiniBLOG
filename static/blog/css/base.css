@@ -51,7 +51,7 @@ body {
     display: flex;
     flex: 1;
     width: 100%;
-    max-width: 1200px;
+    max-width: 100%; 
     margin: 0 auto;
     padding: 20px 10px;
 }
@@ -73,6 +73,7 @@ body {
     flex: 1;
     min-width: 0;
     margin-left: 20px;
+    max-width: none; 
 }
 
 .post-card {
@@ -80,6 +81,9 @@ body {
     border: 1px solid #dbdbdb;
     border-radius: 3px;
     margin-bottom: 20px;
+    max-width: 900px; /* 포스트 카드의 최대 너비 설정 */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .post-header {
@@ -184,7 +188,7 @@ body {
 
 @media (max-width: 1200px) {
     .content-wrapper {
-        max-width: 95%;
+        max-width: 100%; /* 최대 너비를 100%로 유지 */
     }
 }
 
