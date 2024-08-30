@@ -6,8 +6,9 @@ User = get_user_model()
 
 class Message(models.Model):
     sender = models.ForeignKey(
-        User, related_name="sent_messages", on_delete=models.CASCADE
+        User, on_delete=models.CASCADE, related_name="sent_direct_messages"
     )
+
     recipient = models.ForeignKey(
         User, related_name="received_messages", on_delete=models.CASCADE
     )

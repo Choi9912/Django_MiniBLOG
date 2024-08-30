@@ -17,27 +17,41 @@
     </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
-      <a class="navbar-brand" href="{% url 'post_list' %}">InstaBLOG</a>
+      <!-- Brand -->
+      <a class="navbar-brand fw-bold" href="{% url 'post_list' %}">InstaBLOG</a>
+      
+      <!-- Toggler -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
+      
+      <!-- Navbar Links -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto align-items-center">
+          <!-- Search Form -->
           <li class="nav-item">
             <form class="d-flex" action="{% url 'post_search' %}" method="get">
               <div class="input-group">
                 <input class="form-control form-control-sm" type="search" placeholder="Search" aria-label="Search" name="q">
-                <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="fas fa-search"></i></button>
+                <button class="btn btn-outline-secondary btn-sm" type="submit">
+                  <i class="fas fa-search"></i>
+                </button>
               </div>
             </form>
           </li>
+          
+          <!-- Home -->
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'post_list' %}"><i class="fas fa-home"></i></a>
+            <a class="nav-link" href="{% url 'post_list' %}" aria-label="Home">
+              <i class="fas fa-home"></i>
+            </a>
           </li>
+  
+          <!-- Explore Dropdown -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Explore">
               <i class="fas fa-compass"></i>
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -45,17 +59,36 @@
               <li><a class="dropdown-item" href="{% url 'tag_list' %}">Tags</a></li>
             </ul>
           </li>
+  
+          <!-- Create Post -->
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'create_post' %}"><i class="fas fa-plus-square"></i></a>
+            <a class="nav-link" href="{% url 'create_post' %}" aria-label="Create Post">
+              <i class="fas fa-plus-square"></i>
+            </a>
           </li>
+  
+          <!-- User Authentication -->
           {% if user.is_authenticated %}
+            <!-- Profile -->
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'accounts:profile_view' username=user.username %}"><i class="fas fa-user"></i></a>
+              <a class="nav-link" href="{% url 'accounts:profile_view' username=user.username %}" aria-label="Profile">
+                <i class="fas fa-user"></i>
+              </a>
             </li>
+            <!-- Chat -->
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt"></i></a>
+              <a class="nav-link" href="{% url 'chat:conversation_list' %}" aria-label="Chat">
+                <i class="fas fa-comments"></i>
+              </a>
+            </li>
+            <!-- Logout -->
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'account_logout' %}" aria-label="Logout">
+                <i class="fas fa-sign-out-alt"></i>
+              </a>
             </li>
           {% else %}
+            <!-- Login & Sign Up -->
             <li class="nav-item">
               <a class="nav-link" href="{% url 'account_login' %}">Login</a>
             </li>
@@ -67,6 +100,7 @@
       </div>
     </div>
   </nav>
+  
       </nav>
       <div class="container mt-4">
         <div class="row">

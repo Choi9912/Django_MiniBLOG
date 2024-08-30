@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Chat App{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-500 p-4 text-white">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Brand -->
+            <a class="navbar-brand text-2xl font-extrabold hover:text-gray-200 transition-colors" href="{% url 'post_list' %}">
+                InstaBLOG
+            </a>
+
+            <div class="flex items-center">
+                <!-- Chat App Link -->
+                <a href="{% url 'chat:conversation_list' %}" class="text-lg font-bold hover:text-gray-200 transition-colors">
+                    Chat App
+                </a>
+
+                <!-- Conditional Links Based on User Authentication -->
+                {% if user.is_authenticated %}
+                    <!-- New Chat -->
+                    <a href="{% url 'chat:start_conversation' %}" class="ml-6 text-lg hover:text-gray-200 transition-colors">
+                        New Chat
+                    </a>
+                {% else %}
+                    <!-- Login -->
+                    <a href="{% url 'login' %}" class="ml-6 text-lg hover:text-gray-200 transition-colors">
+                        Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mx-auto mt-8">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block extra_body %}{% endblock %}
+</body>
+</html>
