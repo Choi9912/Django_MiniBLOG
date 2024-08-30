@@ -60,7 +60,7 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 class ReplyCreateView(LoginRequiredMixin, CreateView):
     model = Comment
-    fields = ["content"]
+    form_class = CommentForm
     template_name = "comments/reply_form.html"
 
     def dispatch(self, request, *args, **kwargs):
@@ -72,18 +72,15 @@ class ReplyCreateView(LoginRequiredMixin, CreateView):
         form.instance.post = self.parent_comment.post
         form.instance.parent_comment = self.parent_comment
         form.instance.depth = self.parent_comment.depth + 1
-
-        max_depth = 5
-        if form.instance.depth > max_depth:
-            form.add_error(None, f"댓글은 최대 {max_depth}단계까지만 허용됩니다.")
-            return self.form_invalid(form)
-
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["parent_comment"] = self.parent_comment
         return context
+
+    def get_success_url(self):
+        return reverse("post_detail", kwargs={"pk": self.object.post.pk})
 
 
 class ReplyUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):

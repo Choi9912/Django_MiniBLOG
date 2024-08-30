@@ -11,38 +11,6 @@ from django.utils.text import slugify
 User = get_user_model()
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=25, unique=True)
-    slug = models.SlugField(max_length=200, unique=True, allow_unicode=True)
-
-    def __str__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        return reverse("category_posts", kwargs={"slug": self.slug})
-
-    class Meta:
-        verbose_name_plural = "Categories"
-
-
-class Tag(models.Model):
-    name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(max_length=100, unique=True, allow_unicode=True)
-
-    def __str__(self):
-        return self.name
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name, allow_unicode=True)
-        if not self.slug:
-            self.slug = "tag"
-        super().save(*args, **kwargs)
-
-    def get_absolute_url(self):
-        return reverse("tag_posts", kwargs={"slug": self.slug})
-
-
 class SoftDeleteModel(models.Model):
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
@@ -59,6 +27,38 @@ class SoftDeleteModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class Category(SoftDeleteModel):
+    name = models.CharField(max_length=25, unique=True)
+    slug = models.SlugField(max_length=200, unique=True, allow_unicode=True)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("category_posts", kwargs={"slug": self.slug})
+
+    class Meta:
+        verbose_name_plural = "Categories"
+
+
+class Tag(SoftDeleteModel):
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, allow_unicode=True)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name, allow_unicode=True)
+        if not self.slug:
+            self.slug = "tag"
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse("tag_posts", kwargs={"slug": self.slug})
 
 
 class Post(SoftDeleteModel):

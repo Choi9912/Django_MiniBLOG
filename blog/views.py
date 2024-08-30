@@ -240,7 +240,7 @@ class CategoryPostListView(SortPostsMixin, ListView):
 
     def get_queryset(self):
         self.category = get_object_or_404(Category, slug=self.kwargs["slug"])
-        return super().get_queryset().filter(category=self.category)
+        return super().get_queryset().filter(category=self.category, is_deleted=False)
 
 
 class TagListView(ListView):
@@ -252,7 +252,7 @@ class TagListView(ListView):
         return Tag.objects.annotate(post_count=Count("post")).filter(post_count__gt=0)
 
 
-class TagPostListView(SortPostsMixin, ListView):
+class TagPostListView(ListView):
     model = Post
     template_name = "blog/tag_posts.html"
     context_object_name = "posts"
@@ -260,7 +260,7 @@ class TagPostListView(SortPostsMixin, ListView):
 
     def get_queryset(self):
         self.tag = get_object_or_404(Tag, slug=self.kwargs.get("slug"))
-        return super().get_queryset().filter(tags=self.tag)
+        return super().get_queryset().filter(tags=self.tag, is_deleted=False)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
