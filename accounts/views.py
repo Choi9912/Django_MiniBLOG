@@ -60,22 +60,32 @@ class ProfileDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.object.user
+        user_stats = get_user_stats(user)
+        is_own_profile = self.request.user == user
         context.update(
             {
                 "user_posts": Post.objects.filter(
                     author=user, is_deleted=False
                 ).order_by("-created_at"),
-                "is_own_profile": self.request.user == user,
-                "user_stats": get_user_stats(user),
+                "is_own_profile": is_own_profile,
+                "user_stats": user_stats,
+                "follower_count": user_stats["follower_count"],
             }
         )
-        if self.request.user.is_authenticated and not context["is_own_profile"]:
+        if self.request.user.is_authenticated:
             context["is_following"] = Follower.objects.filter(
                 user=user, follower=self.request.user
             ).exists()
         else:
             context["is_following"] = False
+
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        if context["is_own_profile"]:
+            response.context_data["body_class"] = "own-profile"
+        return response
 
 
 class FollowToggleView(LoginRequiredMixin, View):
@@ -86,10 +96,6 @@ class FollowToggleView(LoginRequiredMixin, View):
         )
         user_to_follow = get_object_or_404(User, username=username)
         user = request.user
-
-        if user == user_to_follow:
-            logger.warning(f"User {user.username} attempted to follow themselves")
-            return JsonResponse({"error": "자신을 팔로우 할 수 없습니다"}, status=400)
 
         follower, created = Follower.objects.get_or_create(
             user=user_to_follow, follower=user
@@ -102,12 +108,16 @@ class FollowToggleView(LoginRequiredMixin, View):
             is_following = True
             action = "followed"
 
-        logger.info(f"{user.username} {action} {user_to_follow.username}")
+        follower_count = Follower.objects.filter(user=user_to_follow).count()
+
+        logger.info(
+            f"{user.username} {action} {user_to_follow.username}. New follower count: {follower_count}"
+        )
 
         return JsonResponse(
             {
                 "is_following": is_following,
-                "follower_count": Follower.objects.filter(user=user_to_follow).count(),
+                "follower_count": follower_count,
             }
         )
 

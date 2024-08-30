@@ -4,7 +4,6 @@ from .views import (
     CategoryPostListView,
     TagListView,
     TagPostListView,
-    TagDetailView,
     PostListView,
     PostDetailView,
     PostCreateView,
@@ -26,5 +25,4 @@ urlpatterns = [
     path("category/<str:slug>/", CategoryPostListView.as_view(), name="category_posts"),
     path("tags/", TagListView.as_view(), name="tag_list"),
     path("tag/<str:slug>/", TagPostListView.as_view(), name="tag_posts"),
-    path("tag/<str:slug>/detail/", TagDetailView.as_view(), name="tag_detail"),
 ]

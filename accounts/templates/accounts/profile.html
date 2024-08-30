@@ -20,32 +20,27 @@
         <div class="profile-info">
             <h2><span class="username">{{ profile.user.username }}</span></h2>
             <div class="profile-stats">
-                <span><strong>{{ user_posts.count }}</strong> 게시물</span>
-                <span><strong id="follower-count">{{ profile.followers.count }}</strong> 팔로워</span>
+                <span><strong>{{ user_stats.post_count }}</strong> 게시물</span>
+                <span><strong>{{ follower_count }}</strong> 팔로워</span>
                 <span><strong>{{ profile.user.following.count }}</strong> 팔로우</span>
             </div>
             <div class="profile-actions">
                 {% if is_own_profile %}
                     <a href="{% url 'accounts:profile_update' %}" class="btn btn-outline-secondary">프로필 편집</a>
                     <a href="{% url 'accounts:user_dashboard' %}" class="btn btn-outline-info">대시보드 보기</a>
-                {% elif user.is_authenticated %}
-                    <button id="follow-btn" class="btn btn-primary" data-username="{{ profile.user.username }}">
-                        {% if is_following %}
-                            팔로우 취소
-                        {% else %}
-                            팔로우
-                        {% endif %}
+                {% endif %}
+                {% if user.is_authenticated %}
+                    <button class="btn btn-primary follow-toggle" data-username="{{ profile.user.username }}">
+                        {% if is_following %}팔로우 취소{% else %}팔로우{% endif %}
                     </button>
                 {% endif %}
             </div>
+            <div class="profile-bio">
+                <p class="bio-item"><strong>{{ profile.bio }}</strong></p>
+            </div>
         </div>
     </div>
-
-    <div class="profile-bio">
-        <p>생일 : {{profile.birthday}}</p>
-        <p>지역: {{ profile.location }}</p>
-        <p>자기소개 :{{ profile.bio }}</p>
-    </div>
+</div>
 
     <div class="profile-posts">
         <h3 class="section-title">게시물</h3>

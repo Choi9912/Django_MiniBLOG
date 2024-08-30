@@ -1,42 +1,43 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded');
-    const followBtn = document.getElementById('follow-btn');
-    if (followBtn) {
-        console.log('Follow button found:', followBtn);
-        followBtn.addEventListener('click', function() {
-            console.log('Follow button clicked');
+    const followToggle = document.querySelector('.follow-toggle');
+    if (followToggle) {
+        followToggle.addEventListener('click', function() {
             const username = this.dataset.username;
-            fetch(`/accounts/follow/${username}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.is_following) {
-                    this.textContent = '팔로우 취소';
-                    this.classList.remove('btn-primary');
-                    this.classList.add('btn-secondary');
-                } else {
-                    this.textContent = '팔로우';
-                    this.classList.remove('btn-secondary');
-                    this.classList.add('btn-primary');
+            const isOwnProfile = document.body.classList.contains('own-profile');
+            
+            if (isOwnProfile) {
+                if (confirm('자기 자신을 팔로우/언팔로우 하시겠습니까?')) {
+                    toggleFollow(username, this);
                 }
-                document.getElementById('follower-count').textContent = data.follower_count;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('팔로우 처리 중 오류가 발생했습니다. 다시 시도해 주세요.');
-            });
+            } else {
+                toggleFollow(username, this);
+            }
         });
-    } else {
-        console.log('Follow button not found');
     }
 });
 
-// CSRF 토큰을 가져오는 함수
+function toggleFollow(username, button) {
+    fetch(`/accounts/follow/${username}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        button.textContent = data.is_following ? '팔로우 취소' : '팔로우';
+        const followerCountElement = document.querySelector('.profile-stats span:nth-child(2) strong');
+        if (followerCountElement) {
+            followerCountElement.textContent = data.follower_count;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('팔로우 토글 중 오류가 발생했습니다.');
+    });
+}
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

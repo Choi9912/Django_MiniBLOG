@@ -266,14 +266,3 @@ class TagPostListView(SortPostsMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["tag"] = self.tag
         return context
-
-
-class TagDetailView(DetailView):
-    model = Tag
-    template_name = "blog/tag_detail.html"
-    context_object_name = "tag"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["posts"] = self.object.get_posts()
-        return context
