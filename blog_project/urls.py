@@ -10,6 +10,7 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("blog/", include("blog.urls")),
     path("comments/", include("comments.urls")),
+    path("direct_messages/", include("direct_messages.urls")),
     path("", RedirectView.as_view(url="/blog/", permanent=True)),
     path("summernote/", include("django_summernote.urls")),
 ]

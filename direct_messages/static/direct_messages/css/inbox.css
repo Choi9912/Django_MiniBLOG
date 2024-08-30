@@ -1,0 +1,15 @@
+
+  .message-table {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  }
+  .message-table th {
+    background-color: #f8f9fa;
+    color: #495057;
+  }
+  .message-row:hover {
+    background-color: #f1f3f5;
+    transition: background-color 0.3s ease;
+  }
+  .unread {
+    font-weight: bold;
+  }

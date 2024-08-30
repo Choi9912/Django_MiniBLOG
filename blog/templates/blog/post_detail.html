@@ -63,7 +63,7 @@
         </div>
         <div class="card-footer bg-white">
             <div class="post-actions mt-2 mb-3">
-                <form class="like-form" action="{% url 'like_post' post.pk %}" method="post">
+                <form class="like-form" action="{% url 'post_like_toggle' post.pk %}" method="post">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-sm like-btn {% if user in post.likes.all %}liked{% endif %}">
                         <i class="far fa-heart"></i>
@@ -98,6 +98,7 @@
                 </form>
             </div>
             {% endif %}
+
         </div>
         </div>
       </div>

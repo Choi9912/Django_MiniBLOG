@@ -81,10 +81,21 @@ class Post(SoftDeleteModel):
     )
     tags = models.ManyToManyField("Tag", blank=True)
     view_count = models.PositiveIntegerField(default=0)
-    likes = models.ManyToManyField(User, related_name="liked_posts", blank=True)
 
     def __str__(self):
         return self.title
 
     def get_absolute_url(self):
         return reverse("post_detail", kwargs={"pk": self.pk})
+
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "post")
+
+    def __str__(self):
+        return f"{self.user.username} likes {self.post.title}"

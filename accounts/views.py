@@ -97,6 +97,20 @@ class FollowToggleView(LoginRequiredMixin, View):
         user_to_follow = get_object_or_404(User, username=username)
         user = request.user
 
+        # 자기 자신을 팔로우하려는 시도 방지
+        if user == user_to_follow:
+            logger.warning(f"{user.username} attempted to follow themselves")
+            return JsonResponse(
+                {
+                    "error": "You cannot follow yourself",
+                    "is_following": False,
+                    "follower_count": Follower.objects.filter(
+                        user=user_to_follow
+                    ).count(),
+                },
+                status=400,
+            )
+
         follower, created = Follower.objects.get_or_create(
             user=user_to_follow, follower=user
         )

@@ -1,19 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.like-form').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
+    document.querySelectorAll('.like-button').forEach(function(button) {
+        button.addEventListener('click', function(e) {
             e.preventDefault();
-            const formData = new FormData(this);
-            const url = this.action;
-            const likeButton = this.querySelector('.like-button');
+            const postId = this.dataset.postId;
+            const likeUrl = `/blog/like/${postId}/`;  // URL을 올바르게 설정했는지 확인하세요
             const likesCountElement = this.nextElementSibling;
+            const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
-            fetch(url, {
+            fetch(likeUrl, {
                 method: 'POST',
-                body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                }
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
             })
             .then(response => {
                 if (!response.ok) {
@@ -30,9 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 likesCountElement.textContent = `${data.likes_count} `;
                 if (data.liked) {
-                    likeButton.classList.add('liked');
+                    this.classList.add('liked');
                 } else {
-                    likeButton.classList.remove('liked');
+                    this.classList.remove('liked');
                 }
             })
             .catch(error => {

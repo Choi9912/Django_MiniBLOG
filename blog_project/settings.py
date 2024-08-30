@@ -76,6 +76,7 @@ LOCAL_APPS = [
     "blog",
     "accounts",
     "comments",
+    "direct_messages",
 ]
 
 # Combine all apps

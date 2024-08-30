@@ -6,12 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const isOwnProfile = document.body.classList.contains('own-profile');
             
             if (isOwnProfile) {
-                if (confirm('자기 자신을 팔로우/언팔로우 하시겠습니까?')) {
-                    toggleFollow(username, this);
-                }
-            } else {
-                toggleFollow(username, this);
+                alert('자기 자신을 팔로우할 수 없습니다.');
+                return;
             }
+            
+            toggleFollow(username, this);
         });
     }
 });
@@ -26,6 +25,10 @@ function toggleFollow(username, button) {
     })
     .then(response => response.json())
     .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
         button.textContent = data.is_following ? '팔로우 취소' : '팔로우';
         const followerCountElement = document.querySelector('.profile-stats span:nth-child(2) strong');
         if (followerCountElement) {

@@ -13,12 +13,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q, Count, F, ExpressionWrapper, fields
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+
 from datetime import timedelta
 import re
 from django.db import transaction
-from .models import Post, Category, Tag
+from .models import Like, Post, Category, Tag
 from blog.forms import CustomPostForm
+from django.db.models import Exists, OuterRef
 
 
 class PopularPostsMixin:
@@ -85,7 +87,15 @@ class PostListView(SortPostsMixin, PopularPostsMixin, ListView):
     paginate_by = 6
 
     def get_queryset(self):
-        return super().get_queryset().filter(is_deleted=False)
+        queryset = super().get_queryset().filter(is_deleted=False)
+
+        if self.request.user.is_authenticated:
+            queryset = queryset.annotate(
+                liked_by_user=Exists(
+                    Like.objects.filter(user=self.request.user, post=OuterRef("pk"))
+                )
+            )
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -126,6 +136,11 @@ class PostDetailView(PopularPostsMixin, DetailView):
         )
         context["content"] = content_with_links
         context["view_count"] = post.view_count
+        context["likes_count"] = post.likes.count()
+        if self.request.user.is_authenticated:
+            context["user_has_liked"] = post.likes.filter(
+                user=self.request.user
+            ).exists()
         return context
 
 
@@ -202,25 +217,22 @@ class PostSearchView(ListView):
 
 
 class PostLikeToggleView(View):
-    @method_decorator(require_POST)
-    def post(self, request, *args, **kwargs):
+    def post(self, request, pk):
         if not request.user.is_authenticated:
-            if request.headers.get("x-requested-with") == "XMLHttpRequest":
-                return JsonResponse({"error": "login_required"}, status=401)
-            else:
-                return HttpResponseRedirect(reverse("login") + f"?next={request.path}")
+            return JsonResponse({"error": "login_required"}, status=401)
 
-        post = get_object_or_404(Post, pk=kwargs["pk"])
-        user = request.user
+        post = get_object_or_404(Post, pk=pk)
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
 
-        if user in post.likes.all():
-            post.likes.remove(user)
+        if not created:
+            like.delete()
             liked = False
         else:
-            post.likes.add(user)
             liked = True
 
-        return JsonResponse({"likes_count": post.likes.count(), "liked": liked})
+        likes_count = post.likes.count()
+
+        return JsonResponse({"liked": liked, "likes_count": likes_count})
 
 
 class CategoryListView(ListView):

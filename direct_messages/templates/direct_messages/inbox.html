@@ -1,0 +1,48 @@
+{% extends "blog/base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'direct_messages/css/inbox.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">받은 쪽지함</h2>
+  
+  <div class="card message-table">
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>보낸 사람</th>
+            <th>제목</th>
+            <th>날짜</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for message in messages %}
+            <tr class="message-row {% if not message.is_read %}unread{% endif %}">
+              <td>{{ message.sender.username }}</td>
+              <td><a href="{% url 'direct_messages:message_detail' message.pk %}">{{ message.subject }}</a></td>
+              <td>{{ message.timestamp|date:"Y-m-d H:i" }}</td>
+              <td>{% if message.is_read %}<span class="badge bg-secondary">읽음</span>{% else %}<span class="badge bg-primary">안 읽음</span>{% endif %}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="text-center">받은 쪽지가 없습니다.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+  <div class="mt-4">
+    <a href="{% url 'direct_messages:send_message' %}" class="btn btn-primary">
+      <i class="fas fa-pen-to-square me-2"></i>새 쪽지 보내기
+    </a>
+  </div>
+</div>
+{% endblock %}
