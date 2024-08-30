@@ -71,6 +71,13 @@ class ReplyCreateView(LoginRequiredMixin, CreateView):
         form.instance.author = self.request.user
         form.instance.post = self.parent_comment.post
         form.instance.parent_comment = self.parent_comment
+        form.instance.depth = self.parent_comment.depth + 1
+
+        max_depth = 5
+        if form.instance.depth > max_depth:
+            form.add_error(None, f"댓글은 최대 {max_depth}단계까지만 허용됩니다.")
+            return self.form_invalid(form)
+
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):

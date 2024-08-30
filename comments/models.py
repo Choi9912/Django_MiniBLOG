@@ -16,6 +16,12 @@ class Comment(SoftDeleteModel):
     parent_comment = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
     )
+    depth = models.PositiveIntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        if self.parent_comment:
+            self.depth = self.parent_comment.depth + 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post.title}"
