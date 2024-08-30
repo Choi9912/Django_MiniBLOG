@@ -104,7 +104,24 @@ class FollowToggleViewTest(TestCase):
         self.client.login(username="user1", password="12345")
         url = reverse("accounts:follow_toggle", args=[self.user1.username])
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertIn("error", data)
-        self.assertEqual(data["error"], "자신을 팔로우 할 수 없습니다")
+        self.assertIn("is_following", data)
+        self.assertIn("follower_count", data)
+
+        # 첫 번째 요청: 자기 자신을 팔로우
+        self.assertTrue(data["is_following"])
+        self.assertEqual(data["follower_count"], 1)
+        self.assertTrue(
+            Follower.objects.filter(user=self.user1, follower=self.user1).exists()
+        )
+
+        # 두 번째 요청: 자기 자신을 언팔로우
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertFalse(data["is_following"])
+        self.assertEqual(data["follower_count"], 0)
+        self.assertFalse(
+            Follower.objects.filter(user=self.user1, follower=self.user1).exists()
+        )

@@ -12,6 +12,11 @@ class CommentForm(forms.ModelForm):
         help_texts = {
             "content": "댓글 내용을 입력해주세요. (최대 500자)",
         }
+        error_messages = {
+            "content": {
+                "required": "댓글 내용을 입력해주세요.",
+            }
+        }
 
     def clean_content(self):
         content = self.cleaned_data.get("content")

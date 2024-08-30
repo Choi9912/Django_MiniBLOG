@@ -1,3 +1,4 @@
+from django.db import connection
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -141,30 +142,84 @@ class PopularPostsMixinTests(TestCase):
         self.assertEqual(popular_posts[0], self.post1)
 
 
+from django.test import TestCase, Client
+from django.urls import reverse
+from django.contrib.auth import get_user_model
+from .models import Post, Category
+from django.utils import timezone
+from datetime import timedelta
+
+User = get_user_model()
+
+
 class SortPostsMixinTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="testuser", password="12345")
         self.category = Category.objects.create(
             name="Test Category", slug="test-category"
         )
+
+        # 현재 시간을 기준으로 설정
+        now = timezone.now()
+
         self.post1 = Post.objects.create(
             title="Old Post",
             content="Test Content",
             author=self.user,
             category=self.category,
-            created_at=timezone.now() - timezone.timedelta(days=2),
+            created_at=now - timedelta(days=7),
         )
+        self.post1.save()
+
+        # 1초 대기하여 확실한 시간 차이 생성
+        import time
+
+        time.sleep(1)
+
         self.post2 = Post.objects.create(
             title="New Post",
             content="Test Content",
             author=self.user,
             category=self.category,
-            created_at=timezone.now(),
+            created_at=now - timedelta(hours=1),
         )
+        self.post2.save()
+
+        # 데이터베이스에서 새로 불러와 시간 정보 갱신
+        self.post1.refresh_from_db()
+        self.post2.refresh_from_db()
 
     def test_sort_posts_by_latest(self):
         response = self.client.get(reverse("post_list") + "?sort=latest")
         self.assertEqual(response.status_code, 200)
         posts = list(response.context["posts"])
-        self.assertEqual(posts[0], self.post2)
+
+        print("\nDebug Information:")
+        print("Posts in order:")
+        for post in posts:
+            print(f"{post.title}: {post.created_at}")
+
+        self.assertLess(
+            self.post1.created_at, self.post2.created_at
+        )  # 추가된 assertion
+        self.assertEqual(posts[0], self.post2)  # 최신 글이 먼저 나와야 함
         self.assertEqual(posts[1], self.post1)
+
+    def test_sort_posts_by_likes(self):
+        self.post1.likes.add(self.user)  # Old Post에 좋아요 추가
+        response = self.client.get(reverse("post_list") + "?sort=likes")
+        self.assertEqual(response.status_code, 200)
+        posts = list(response.context["posts"])
+        self.assertEqual(posts[0], self.post1)  # 좋아요가 많은 글이 먼저 나와야 함
+        self.assertEqual(posts[1], self.post2)
+
+    def test_sort_posts_by_views(self):
+        self.post1.view_count = 10
+        self.post1.save()
+        self.post2.view_count = 5
+        self.post2.save()
+        response = self.client.get(reverse("post_list") + "?sort=views")
+        self.assertEqual(response.status_code, 200)
+        posts = list(response.context["posts"])
+        self.assertEqual(posts[0], self.post1)  # 조회수가 많은 글이 먼저 나와야 함
+        self.assertEqual(posts[1], self.post2)
