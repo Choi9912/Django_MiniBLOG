@@ -215,7 +215,21 @@
 .pagination .current {
     font-weight: bold;
 }
-
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.btn-group .btn {
+    transition: all 0.2s;
+}
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+}
+.dropdown-toggle::after {
+    display: none;
+}
 /* 사이드바 스타일 */
 .sidebar {
     width: 25%;
@@ -285,55 +299,58 @@
         grid-template-columns: 1fr;
     }
 }
-/* 기존 CSS 코드는 유지하고 아래 스타일을 추가합니다 */
+/* 기존 CSS 코드는 유지합니다 */
 
-.sort-container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* 드롭다운 메뉴 스타일 */
+.dropdown {
+    margin-bottom: 10px;
 }
 
-.sort-title {
-    font-size: 1.2rem;
-    color: #333;
-    margin-bottom: 15px;
-}
-
-.sort-options {
+.dropdown-toggle {
+    font-size: 12px;
+    padding: 4px 8px;
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.sort-button {
-    display: inline-flex;
+    justify-content: space-between;
     align-items: center;
-    padding: 8px 16px;
-    background-color: #fff;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
+    min-width: 80px;
 }
 
-.sort-button:hover {
-    background-color: #f0f0f0;
+.dropdown-toggle::after {
+    content: '\f107';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    margin-left: 4px;
+    font-size: 10px;
 }
 
-.sort-button.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
+.dropdown-menu {
+    min-width: 100px;
+    font-size: 12px;
+    padding: 0;
 }
 
-.sort-button i {
-    margin-right: 5px;
+.dropdown-item {
+    padding: 6px 10px;
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: #fafafa;
+}
+
+.dropdown-item.active {
+    background-color: #0095f6;
+    color: #fff;
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-end {
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    
+    .dropdown {
+        width: auto;
+    }
 }
 
 @media (max-width: 600px) {

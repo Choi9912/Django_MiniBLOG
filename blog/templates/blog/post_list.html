@@ -13,18 +13,27 @@
 {% endblock %}
 
 {% block content %}
-<div class="sort-container">
-    <h2 class="sort-title">정렬 옵션</h2>
-    <div class="sort-options">
-        <a href="?sort=latest" class="sort-button {% if current_sort == 'latest' %}active{% endif %}">
-            <i class="fas fa-clock"></i> 최신순
-        </a>
-        <a href="?sort=likes" class="sort-button {% if current_sort == 'likes' %}active{% endif %}">
-            <i class="fas fa-heart"></i> 좋아요순
-        </a>
-        <a href="?sort=views" class="sort-button {% if current_sort == 'views' %}active{% endif %}">
-            <i class="fas fa-eye"></i> 조회순
-        </a>
+<div class="container mt-4">
+    <div class="d-flex justify-content-end mb-3">
+        <div class="dropdown me-2">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                정렬
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
+                <li><a class="dropdown-item {% if current_sort == 'latest' %}active{% endif %}" href="?sort=latest">최신순</a></li>
+                <li><a class="dropdown-item {% if current_sort == 'likes' %}active{% endif %}" href="?sort=likes">좋아요순</a></li>
+                <li><a class="dropdown-item {% if current_sort == 'views' %}active{% endif %}" href="?sort=views">조회순</a></li>
+            </ul>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="classifyDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                분류
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="classifyDropdown">
+                <li><a class="dropdown-item" href="{% url 'category_list' %}">카테고리</a></li>
+                <li><a class="dropdown-item" href="{% url 'tag_list' %}">태그</a></li>
+            </ul>
+        </div>
     </div>
 </div>
 

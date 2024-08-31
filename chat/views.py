@@ -10,6 +10,9 @@ from django.db import transaction
 
 from .models import Conversation, Message
 from .forms import StartConversationForm
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class ConversationListView(LoginRequiredMixin, ListView):
@@ -67,6 +70,26 @@ class StartConversationView(LoginRequiredMixin, CreateView):
         participant = form.cleaned_data["participant"]
         conversation = form.save()
         conversation.participants.add(self.request.user, participant)
+        return redirect("chat:conversation_detail", pk=conversation.pk)
+
+
+class StartConversationWithView(LoginRequiredMixin, View):
+    def get(self, request, username):
+        User = get_user_model()
+        participant = get_object_or_404(User, username=username)
+
+        conversation = (
+            Conversation.objects.filter(participants=request.user)
+            .filter(participants=participant)
+            .first()
+        )
+
+        if conversation:
+            return redirect("chat:conversation_detail", pk=conversation.pk)
+
+        conversation = Conversation.objects.create()
+        conversation.participants.add(request.user, participant)
+
         return redirect("chat:conversation_detail", pk=conversation.pk)
 
 

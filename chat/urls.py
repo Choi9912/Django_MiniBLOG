@@ -11,6 +11,11 @@ urlpatterns = [
     ),
     path("start/", views.StartConversationView.as_view(), name="start_conversation"),
     path(
+        "start_with/<str:username>/",
+        views.StartConversationWithView.as_view(),
+        name="start_conversation_with",
+    ),
+    path(
         "send_message/<int:conversation_id>/", views.send_message, name="send_message"
     ),
     path(

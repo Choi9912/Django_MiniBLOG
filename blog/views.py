@@ -159,7 +159,18 @@ class CategoryPostListView(SortPostsMixin, ListView):
 
     def get_queryset(self):
         self.category = get_object_or_404(Category, slug=self.kwargs["slug"])
-        return super().get_queryset().filter(category=self.category, is_deleted=False)
+        queryset = (
+            super().get_queryset().filter(category=self.category, is_deleted=False)
+        )
+        sort_by = self.request.GET.get("sort", "latest")
+        return PostService.get_sorted_posts(sort_by, self.request.user).filter(
+            category=self.category
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["category"] = self.category
+        return context
 
 
 class TagListView(ListView):
@@ -171,7 +182,7 @@ class TagListView(ListView):
         return Tag.objects.annotate(post_count=Count("post")).filter(post_count__gt=0)
 
 
-class TagPostListView(ListView):
+class TagPostListView(SortPostsMixin, ListView):
     model = Post
     template_name = "blog/tag_posts.html"
     context_object_name = "posts"
@@ -179,7 +190,11 @@ class TagPostListView(ListView):
 
     def get_queryset(self):
         self.tag = get_object_or_404(Tag, slug=self.kwargs.get("slug"))
-        return super().get_queryset().filter(tags=self.tag, is_deleted=False)
+        queryset = super().get_queryset().filter(tags=self.tag, is_deleted=False)
+        sort_by = self.request.GET.get("sort", "latest")
+        return PostService.get_sorted_posts(sort_by, self.request.user).filter(
+            tags=self.tag
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
