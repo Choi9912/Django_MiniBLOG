@@ -2,17 +2,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, DeleteView
 from django.views import View
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from django.db import transaction
 
-from .models import Conversation, Message
+from .models import Conversation
 from .forms import StartConversationForm
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from . import service
 
 
 class ConversationListView(LoginRequiredMixin, ListView):
@@ -21,9 +18,7 @@ class ConversationListView(LoginRequiredMixin, ListView):
     context_object_name = "conversations"
 
     def get_queryset(self):
-        return Conversation.objects.filter(participants=self.request.user).order_by(
-            "-updated_at"
-        )
+        return service.get_user_conversations(self.request.user)
 
 
 class ConversationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
@@ -38,10 +33,8 @@ class ConversationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         conversation = self.get_object()
-        context["messages"] = conversation.messages.order_by("timestamp")
-        other_participants = conversation.participants.exclude(id=self.request.user.id)
-        context["other_participant"] = (
-            other_participants.first() if other_participants.exists() else None
+        context["messages"], context["other_participant"] = (
+            service.get_conversation_details(conversation, self.request.user)
         )
         return context
 
@@ -49,10 +42,7 @@ class ConversationDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView
         conversation = self.get_object()
         content = request.POST.get("content")
         if content:
-            message = Message.objects.create(
-                conversation=conversation, sender=request.user, content=content
-            )
-            message.read_by.add(request.user)
+            service.create_message(conversation, request.user, content)
         return redirect(self.request.path_info)
 
 
@@ -68,50 +58,33 @@ class StartConversationView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         participant = form.cleaned_data["participant"]
-        conversation = form.save()
-        conversation.participants.add(self.request.user, participant)
+        conversation = service.start_conversation(self.request.user, participant)
         return redirect("chat:conversation_detail", pk=conversation.pk)
 
 
 class StartConversationWithView(LoginRequiredMixin, View):
     def get(self, request, username):
-        User = get_user_model()
-        participant = get_object_or_404(User, username=username)
-
-        conversation = (
-            Conversation.objects.filter(participants=request.user)
-            .filter(participants=participant)
-            .first()
-        )
-
-        if conversation:
-            return redirect("chat:conversation_detail", pk=conversation.pk)
-
-        conversation = Conversation.objects.create()
-        conversation.participants.add(request.user, participant)
-
+        conversation = service.get_or_create_conversation(request.user, username)
         return redirect("chat:conversation_detail", pk=conversation.pk)
 
 
 class ConversationDeleteView(LoginRequiredMixin, DeleteView):
-    model = Conversation
     success_url = reverse_lazy("chat:conversation_list")
 
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user)
 
+    def delete(self, request, *args, **kwargs):
+        service.delete_conversation(request.user, self.kwargs["pk"])
+        return super().delete(request, *args, **kwargs)
+
 
 @login_required
 @require_POST
 def send_message(request, conversation_id):
-    conversation = get_object_or_404(
-        Conversation, id=conversation_id, participants=request.user
-    )
     content = request.POST.get("content")
-    if content:
-        message = Message.objects.create(
-            conversation=conversation, sender=request.user, content=content
-        )
+    message = service.send_message(request.user, conversation_id, content)
+    if message:
         return JsonResponse(
             {
                 "status": "success",
