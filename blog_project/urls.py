@@ -9,8 +9,6 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("accounts/", include("accounts.urls")),
     path("blog/", include("blog.urls")),
-    path("comments/", include("comments.urls")),
-    path("direct_messages/", include("direct_messages.urls")),
     path("chat/", include("chat.urls")),
     path("", RedirectView.as_view(url="/blog/", permanent=True)),
     path("summernote/", include("django_summernote.urls")),

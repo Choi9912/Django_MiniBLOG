@@ -69,6 +69,7 @@ THIRD_PARTY_APPS = [
     "widget_tweaks",
     "imagekit",
     "django_summernote",
+    "channels",
 ]
 
 # Local apps
@@ -76,7 +77,6 @@ LOCAL_APPS = [
     "blog",
     "accounts",
     "comments",
-    "direct_messages",
     "chat",
 ]
 
@@ -146,9 +146,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 WSGI_APPLICATION = "blog_project.wsgi.application"
+ASGI_APPLICATION = "blog_project.asgi.application"
 
-
-# Database
+CHANNEL_LAYERS = {
+    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
+}  # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {

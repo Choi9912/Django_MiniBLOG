@@ -36,13 +36,11 @@
                 {% if is_own_profile %}
                     <a href="{% url 'accounts:profile_update' %}" class="btn btn-outline-secondary">프로필 편집</a>
                     <a href="{% url 'accounts:user_dashboard' %}" class="btn btn-outline-info">대시보드 보기</a>
-                    <a href="{% url 'direct_messages:inbox' %}" class="btn btn-info">받은 쪽지함</a>
                 {% else %}
                     {% if user.is_authenticated %}
                         <button class="btn btn-primary follow-toggle" data-username="{{ profile.user.username }}">
                             {% if is_following %}팔로우 취소{% else %}팔로우{% endif %}
                         </button>
-                        <a href="{% url 'direct_messages:send_message' %}?recipient={{ profile.user.username }}" class="btn btn-outline-primary">쪽지 보내기</a>
                         <a href="{% url 'chat:start_conversation' %}?with={{ profile.user.username }}" class="btn btn-success">메시지 보내기</a>
                     {% endif %}
                 {% endif %}
