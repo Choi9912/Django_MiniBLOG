@@ -1,8 +1,8 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from django.utils import timezone
-from blog.models import SoftDeleteModel, Post
+from django.db import models
 from django.urls import reverse
+
+from blog.models import SoftDeleteModel, Post
 
 User = get_user_model()
 

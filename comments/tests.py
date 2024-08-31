@@ -1,8 +1,8 @@
-from django.test import TestCase, RequestFactory
 from django.contrib.auth import get_user_model
-from django.urls import reverse
-from .models import Comment, Post
+from django.test import TestCase, RequestFactory
+
 from .forms import CommentForm
+from .models import Comment, Post
 from .views import (
     CommentCreateView,
     CommentUpdateView,

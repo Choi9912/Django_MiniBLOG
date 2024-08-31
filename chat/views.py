@@ -1,15 +1,15 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
-from django.views.generic import ListView, DetailView, CreateView, DeleteView
-from django.views import View
-from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import JsonResponse
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.decorators.http import require_POST
+from django.views.generic import ListView, DetailView, CreateView, DeleteView
 
-from .models import Conversation
-from .forms import StartConversationForm
 from . import service
+from .forms import StartConversationForm
+from .models import Conversation
 
 
 class ConversationListView(LoginRequiredMixin, ListView):

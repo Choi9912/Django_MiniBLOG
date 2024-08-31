@@ -1,7 +1,9 @@
+from datetime import timedelta
+
 from django.db.models import Q, Count, F, ExpressionWrapper, fields, Exists, OuterRef
 from django.utils import timezone
-from datetime import timedelta
-from .models import Post, Like, Category, Tag
+
+from .models import Post, Like
 
 
 class PostService:

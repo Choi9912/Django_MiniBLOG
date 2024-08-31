@@ -1,8 +1,9 @@
+import re
+
 from django import forms
+from django_summernote.widgets import SummernoteWidget
 
 from .models import Post, Tag
-import re
-from django_summernote.widgets import SummernoteWidget
 
 
 class CustomPostForm(forms.ModelForm):

@@ -1,6 +1,8 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.views.generic import (
     ListView,
     DetailView,
@@ -9,11 +11,9 @@ from django.views.generic import (
     DeleteView,
     View,
 )
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Count
 
-from .models import Post, Category, Tag
 from .forms import CustomPostForm
+from .models import Post, Category, Tag
 from .service import PostService
 
 

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+
 from .models import Conversation, Message
 
 User = get_user_model()

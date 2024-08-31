@@ -1,10 +1,9 @@
-from django.db import connection
-from django.test import TestCase, Client
-from django.urls import reverse
+from django.test import TestCase
 from django.contrib.auth import get_user_model
-from .models import Post, Category, Tag
+from django.test import TestCase
+
 from .forms import CustomPostForm
-from django.utils import timezone
+from .models import Tag
 
 User = get_user_model()
 

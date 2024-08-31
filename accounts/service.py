@@ -1,61 +1,57 @@
-import logging
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
-from django.views import View
-from django.views.generic import DetailView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils.decorators import method_decorator
-from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.db import transaction
+from django.db.models import Sum, Count
+from django.shortcuts import get_object_or_404
 
-from .forms import ProfileForm
-from .models import Profile, User
 from blog.models import Post
-from .service import ProfileService
+from .models import Profile, User, Follower
 
-logger = logging.getLogger(__name__)
 
-class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    model = Profile
-    form_class = ProfileForm
-    template_name = "accounts/profile_update.html"
+class ProfileService:
+    @staticmethod
+    def get_user_stats(user):
+        user_posts = Post.objects.filter(author=user)
+        stats = user_posts.aggregate(
+            post_count=Count("id"),
+            total_views=Sum("view_count"),
+            total_likes=Sum("likes__id", distinct=True),
+            follower_count=Count("author__followers", distinct=True),
+        )
+        return {k: v or 0 for k, v in stats.items()}
 
-    def get_object(self, queryset=None):
-        return self.request.user.profile
+    @staticmethod
+    def get_or_create_profile(username):
+        try:
+            return Profile.objects.select_related("user").get(user__username=username)
+        except Profile.DoesNotExist:
+            user = get_object_or_404(User, username=username)
+            return Profile.objects.create(user=user)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["is_own_profile"] = True
-        return context
+    @staticmethod
+    def is_following(user, target_user):
+        return Follower.objects.filter(user=target_user, follower=user).exists()
 
-class ProfileDetailView(DetailView):
-    model = Profile
-    template_name = "accounts/profile.html"
-    context_object_name = "profile"
+    @staticmethod
+    @transaction.atomic
+    def toggle_follow(user, user_to_follow):
+        if user == user_to_follow:
+            raise ValidationError("You cannot follow yourself")
 
-    def get_object(self, queryset=None):
-        username = self.kwargs.get("username")
-        user = get_object_or_404(User, username=username)
-        profile, _ = Profile.objects.get_or_create(user=user)
-        return profile
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.object.user
-        user_stats = ProfileService.get_user_stats(user)
-        is_own_profile = self.request.user == user
-        context.update({
-            "user_posts": Post.objects.filter(author=user, is_deleted=False).order_by("-created_at"),
-            "is_own_profile": is_own_profile,
-            "user_stats": user_stats,
-            "follower_count": user_stats["follower_count"],
-        })
-        if self.request.user.is_authenticated:
-            context["is_following"] = Follower.objects.filter(
-                user=user, follower=self.request.user
-            ).exists()
+        follower, created = Follower.objects.get_or_create(
+            user=user_to_follow, follower=user
+        )
+        if not created:
+            follower.delete()
+            is_following = False
         else:
-            context["is_following"] = False
-        return context
+            is_following = True
 
-class FollowTog
+        follower_count = Follower.objects.filter(user=user_to_follow).count()
+        return is_following, follower_count
+
+    @staticmethod
+    def get_user_posts(user, include_deleted=False):
+        posts = Post.objects.filter(author=user)
+        if not include_deleted:
+            posts = posts.filter(is_deleted=False)
+        return posts.order_by("-created_at")

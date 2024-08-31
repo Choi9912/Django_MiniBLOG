@@ -1,16 +1,7 @@
-from django.urls import path
-from .views import (
-    CommentCreateView,
-    CommentUpdateView,
-    CommentDeleteView,
-    ReplyCreateView,
-    ReplyDeleteView,
-    ReplyUpdateView,
-)
-
 app_name = "comments"
 
 from django.urls import path
+
 from . import views
 
 urlpatterns = [
