@@ -10,69 +10,25 @@ from django.views.generic import (
     View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, Count, F, ExpressionWrapper, fields
-from django.utils import timezone
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 
-from datetime import timedelta
-import re
-from django.db import transaction
-from .models import Like, Post, Category, Tag
-from blog.forms import CustomPostForm
-from django.db.models import Exists, OuterRef
+from .models import Post, Category, Tag
+from .forms import CustomPostForm
+from .service import PostService
 
 
 class PopularPostsMixin:
-    def get_popular_posts(self):
-        return (
-            Post.objects.filter(is_deleted=False)
-            .annotate(
-                popularity=ExpressionWrapper(
-                    F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
-                    output_field=fields.IntegerField(),
-                )
-            )
-            .order_by("-popularity")[:5]
-        )
-
-    def get_weekly_ranking(self):
-        yesterday = timezone.now().date() - timedelta(days=1)
-        seven_days_ago = yesterday - timedelta(days=7)
-
-        return (
-            Post.objects.filter(
-                is_deleted=False,
-                created_at__date__gt=seven_days_ago,
-                created_at__date__lte=yesterday,
-            )
-            .annotate(
-                weekly_score=ExpressionWrapper(
-                    F("view_count") + (Count("likes") * 3) + (Count("comments") * 2),
-                    output_field=fields.IntegerField(),
-                )
-            )
-            .order_by("-weekly_score")[:5]
-        )
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["popular_posts"] = self.get_popular_posts()
-        context["weekly_ranking"] = self.get_weekly_ranking()
+        context["popular_posts"] = PostService.get_popular_posts()
+        context["weekly_ranking"] = PostService.get_weekly_ranking()
         return context
 
 
 class SortPostsMixin:
     def get_queryset(self):
-        queryset = super().get_queryset()
         sort_by = self.request.GET.get("sort", "latest")
-        if sort_by == "latest":
-            return queryset.order_by("-created_at")
-        elif sort_by == "likes":
-            return queryset.annotate(like_count=Count("likes")).order_by("-like_count")
-        elif sort_by == "views":
-            return queryset.order_by("-view_count")
-        return queryset
+        return PostService.get_sorted_posts(sort_by, self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -85,17 +41,6 @@ class PostListView(SortPostsMixin, PopularPostsMixin, ListView):
     template_name = "blog/post_list.html"
     context_object_name = "posts"
     paginate_by = 6
-
-    def get_queryset(self):
-        queryset = super().get_queryset().filter(is_deleted=False)
-
-        if self.request.user.is_authenticated:
-            queryset = queryset.annotate(
-                liked_by_user=Exists(
-                    Like.objects.filter(user=self.request.user, post=OuterRef("pk"))
-                )
-            )
-        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -117,24 +62,13 @@ class PostDetailView(PopularPostsMixin, DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
-        self.increase_view_count()
+        PostService.increase_view_count(self.object)
         context = self.get_context_data(object=self.object)
         return self.render_to_response(context)
-
-    @transaction.atomic
-    def increase_view_count(self):
-        Post.objects.filter(pk=self.object.pk).update(view_count=F("view_count") + 1)
-        self.object.refresh_from_db(fields=["view_count"])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         post = self.object
-        content_with_links = re.sub(
-            r"#(\w+)",
-            lambda m: f'<a href="{reverse("tag_posts", kwargs={"slug": m.group(1)})}" class="tag-link">#{m.group(1)}</a>',
-            post.content,
-        )
-        context["content"] = content_with_links
         context["view_count"] = post.view_count
         context["likes_count"] = post.likes.count()
         if self.request.user.is_authenticated:
@@ -188,26 +122,7 @@ class PostSearchView(ListView):
     def get_queryset(self):
         query = self.request.GET.get("q", "")
         search_type = self.request.GET.get("type", "all")
-
-        queryset = Post.objects.all()
-
-        if query:
-            if search_type == "title_content":
-                queryset = queryset.filter(
-                    Q(title__icontains=query) | Q(content__icontains=query)
-                )
-            elif search_type == "tag":
-                queryset = queryset.filter(tags__name__icontains=query).distinct()
-            elif search_type == "category":
-                queryset = queryset.filter(category__name__icontains=query)
-            elif search_type == "all":
-                queryset = queryset.filter(
-                    Q(title__icontains=query)
-                    | Q(content__icontains=query)
-                    | Q(tags__name__icontains=query)
-                    | Q(category__name__icontains=query)
-                ).distinct()
-        return queryset
+        return PostService.search_posts(query, search_type)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -222,15 +137,7 @@ class PostLikeToggleView(View):
             return JsonResponse({"error": "login_required"}, status=401)
 
         post = get_object_or_404(Post, pk=pk)
-        like, created = Like.objects.get_or_create(user=request.user, post=post)
-
-        if not created:
-            like.delete()
-            liked = False
-        else:
-            liked = True
-
-        likes_count = post.likes.count()
+        liked, likes_count = PostService.toggle_like(request.user, post)
 
         return JsonResponse({"liked": liked, "likes_count": likes_count})
 
