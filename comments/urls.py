@@ -10,21 +10,34 @@ from .views import (
 
 app_name = "comments"
 
+from django.urls import path
+from . import views
+
 urlpatterns = [
     path(
         "post/<int:post_pk>/comment/new/",
-        CommentCreateView.as_view(),
+        views.CommentCreateView.as_view(),
         name="comment_create",
     ),
-    path("comment/<int:pk>/edit/", CommentUpdateView.as_view(), name="comment_update"),
     path(
-        "comment/<int:pk>/delete/", CommentDeleteView.as_view(), name="comment_delete"
+        "comment/<int:pk>/update/",
+        views.CommentUpdateView.as_view(),
+        name="comment_update",
     ),
     path(
-        "comment/<int:comment_pk>/reply/",
-        ReplyCreateView.as_view(),
+        "comment/<int:pk>/delete/",
+        views.CommentDeleteView.as_view(),
+        name="comment_delete",
+    ),
+    path(
+        "comment/<int:comment_pk>/reply/new/",
+        views.ReplyCreateView.as_view(),
         name="reply_create",
     ),
-    path("reply/<int:pk>/update/", ReplyUpdateView.as_view(), name="reply_update"),
-    path("reply/<int:pk>/delete/", ReplyDeleteView.as_view(), name="reply_delete"),
+    path(
+        "reply/<int:pk>/update/", views.ReplyUpdateView.as_view(), name="reply_update"
+    ),
+    path(
+        "reply/<int:pk>/delete/", views.ReplyDeleteView.as_view(), name="reply_delete"
+    ),
 ]
