@@ -1,56 +1,134 @@
-{% extends 'chat/base.html' %}
+{% extends "chat/base.html" %}
 {% block title %}Your Conversations{% endblock %}
+
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">Your Conversations</h1>
-    {% if conversations %}
-        <div class="space-y-4">
+<div class="flex h-screen bg-gray-100">
+    <!-- Left column: Conversation list -->
+    <div class="w-1/3 bg-white overflow-y-auto border-r">
+        <h1 class="text-2xl font-bold p-4 border-b">Your Conversations</h1>
+        {% if conversations %}
+            <ul>
             {% for conversation in conversations %}
-                <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300 flex justify-between items-center">
-                    <a href="{% url 'chat:conversation_detail' conversation.id %}" class="flex-grow">
-                        <div class="flex items-center">
-                            <div class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold mr-4">
+                <li class="border-b hover:bg-gray-50">
+                    <a href="#" class="flex items-center p-4 conversation-link" data-room-id="{{ conversation.id }}">
+                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl mr-4">
+                            {{ conversation.participants.all|first|slice:":1"|upper }}
+                        </div>
+                        <div class="flex-grow">
+                            <span class="font-semibold">
                                 {% for participant in conversation.participants.all %}
-                                    {% if participant != user %}
-                                        {{ participant.username|first|upper }}
+                                    {% if participant != request.user %}
+                                        {{ participant.username }}
                                     {% endif %}
                                 {% endfor %}
-                            </div>
-                            <div>
-                                <h2 class="font-semibold text-lg text-gray-800">
-                                    {% for participant in conversation.participants.all %}
-                                        {% if participant != user %}
-                                            {{ participant.username }}
-                                        {% endif %}
-                                    {% endfor %}
-                                </h2>
-                                <p class="text-gray-600 text-sm truncate">
-                                    {{ conversation.messages.last.content|default:"No messages yet"|truncatechars:50 }}
-                                </p>
-                                <span class="text-xs text-gray-500">
-                                    {{ conversation.messages.last.timestamp|date:"M d, H:i"|default:"" }}
-                                </span>
-                            </div>
+                            </span>
+                            <p class="text-sm text-gray-500 truncate">
+                                {% if conversation.messages.last %}
+                                    {{ conversation.messages.last.content|truncatechars:30 }}
+                                {% else %}
+                                    No messages yet
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            {% if conversation.messages.last %}
+                                {{ conversation.messages.last.timestamp|date:"M d, Y" }}
+                            {% endif %}
                         </div>
                     </a>
-                    <form action="{% url 'chat:conversation_delete' conversation.id %}" method="post" class="ml-4">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-500 hover:text-red-700" onclick="return confirm('정말로 이 대화를 삭제하시겠습니까?');">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </form>
-                </div>
+                </li>
             {% endfor %}
+            </ul>
+        {% else %}
+            <p class="p-4 text-gray-500">You don't have any conversations yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Right column: Chat room -->
+    <div class="w-2/3 flex flex-col">
+        <div id="chat-room" class="flex-grow overflow-y-auto p-4">
+            <!-- Chat messages will be loaded here -->
+            <p class="text-center text-gray-500 mt-8">Select a conversation to start chatting</p>
         </div>
-    {% else %}
-        <div class="bg-white p-8 rounded-lg shadow-md text-center">
-            <p class="text-gray-600 mb-4">You don't have any conversations yet.</p>
-            <a href="{% url 'chat:start_conversation' %}" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition duration-300">
-                Start a New Conversation
-            </a>
+        <div class="border-t p-4">
+            <form id="chat-form" class="flex">
+                <input type="text" id="chat-input" class="flex-grow mr-2 p-2 border rounded" placeholder="Type a message..." disabled>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" disabled>Send</button>
+            </form>
         </div>
-    {% endif %}
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatRoom = document.getElementById('chat-room');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const conversationLinks = document.querySelectorAll('.conversation-link');
+    let currentRoomId = null;
+    let chatSocket = null;
+
+    conversationLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const roomId = this.dataset.roomId;
+            loadChatRoom(roomId);
+        });
+    });
+
+    function loadChatRoom(roomId) {
+        if (chatSocket) {
+            chatSocket.close();
+        }
+
+        currentRoomId = roomId;
+        chatRoom.innerHTML = '<p class="text-center">Loading messages...</p>';
+        chatInput.disabled = false;
+        chatForm.querySelector('button').disabled = false;
+
+        fetch(`/chat/${roomId}/messages/`)
+            .then(response => response.json())
+            .then(messages => {
+                chatRoom.innerHTML = '';
+                messages.forEach(addMessageToChat);
+                chatRoom.scrollTop = chatRoom.scrollHeight;
+
+                chatSocket = new WebSocket(`ws://${window.location.host}/ws/chat/${roomId}/`);
+
+                chatSocket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+                    addMessageToChat(data);
+                    chatRoom.scrollTop = chatRoom.scrollHeight;
+                };
+
+                chatSocket.onclose = function(e) {
+                    console.error('Chat socket closed unexpectedly');
+                };
+            });
+    }
+
+    function addMessageToChat(message) {
+        const messageElement = document.createElement('div');
+        messageElement.className = `mb-4 ${message.sender === '{{ request.user.username }}' ? 'text-right' : 'text-left'}`;
+        messageElement.innerHTML = `
+            <div class="inline-block bg-gray-200 rounded px-4 py-2 max-w-xs lg:max-w-md">
+                <p class="font-semibold">${message.sender}</p>
+                <p>${message.content}</p>
+                <p class="text-xs text-gray-500 mt-1">${new Date(message.timestamp).toLocaleString()}</p>
+            </div>
+        `;
+        chatRoom.appendChild(messageElement);
+    }
+
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (chatInput.value.trim() && chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                'message': chatInput.value
+            }));
+            chatInput.value = '';
+        }
+    });
+});
+</script>
 {% endblock %}

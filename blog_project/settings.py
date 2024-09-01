@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+from ckeditor_demo.settings import WSGI_APPLICATION
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -46,7 +47,7 @@ SECRET_KEY = get_env_variable("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
+LANGUAGE_SESSION_KEY = '_language'
 
 # Django built-in apps
 DJANGO_APPS = [
@@ -61,6 +62,7 @@ DJANGO_APPS = [
 
 # Third-party apps
 THIRD_PARTY_APPS = [
+    "channels",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -70,7 +72,6 @@ THIRD_PARTY_APPS = [
     "widget_tweaks",
     "imagekit",
     "django_summernote",
-    "channels",
 ]
 
 # Local apps
@@ -103,6 +104,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "blog_project.urls"
+WSGI_APPLICATION = "blog_project.wsgi.application"
+ASGI_APPLICATION = "blog_project.asgi.application"
 
 TEMPLATES = [
     {
@@ -146,12 +149,17 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-WSGI_APPLICATION = "blog_project.wsgi.application"
-ASGI_APPLICATION = "blog_project.asgi.application"
+
 
 CHANNEL_LAYERS = {
-    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
-}  # Database
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+# Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {

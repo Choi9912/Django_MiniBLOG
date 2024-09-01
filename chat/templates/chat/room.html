@@ -1,0 +1,99 @@
+{% extends "chat/base.html" %}
+
+{% block title %}Chat Room{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+    <!-- Chat header -->
+    <div class="bg-blue-500 px-4 py-3">
+        <h1 class="text-white text-lg font-semibold">Chat with {{ other_user }}</h1>
+    </div>
+
+    <!-- Chat messages -->
+    <div id="chat-messages" class="p-4 h-96 overflow-y-auto">
+        <!-- Messages will be inserted here by JavaScript -->
+    </div>
+
+    <!-- Chat input -->
+    <div class="border-t-2 border-gray-200 px-4 pt-4 mb-2 sm:mb-0">
+        <div class="relative flex">
+            <input id="chat-message-input" type="text" placeholder="Type a message"
+                   class="w-full focus:outline-none focus:placeholder-gray-400 text-gray-600 placeholder-gray-600 pl-4 bg-gray-200 rounded-full py-3">
+            <div class="absolute right-0 items-center inset-y-0 hidden sm:flex">
+                <button id="chat-message-submit" type="button" class="inline-flex items-center justify-center rounded-full h-12 w-12 transition duration-500 ease-in-out text-white bg-blue-500 hover:bg-blue-400 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-6 w-6 transform rotate-90">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ room_name|json_script:"room-name" }}
+{{ request.user.username|json_script:"username" }}
+
+<script>
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const username = JSON.parse(document.getElementById('username').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+
+    const chatMessages = document.getElementById('chat-messages');
+
+    function createMessageElement(message, sender, timestamp) {
+        const isCurrentUser = sender === username;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`;
+
+        const innerDiv = document.createElement('div');
+        innerDiv.className = `${isCurrentUser ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg py-2 px-4 max-w-[70%]`;
+
+        const messageContent = document.createElement('p');
+        messageContent.textContent = message;
+
+        const timestampElement = document.createElement('p');
+        timestampElement.className = 'text-xs text-gray-500 mt-1';
+        timestampElement.textContent = new Date(timestamp).toLocaleString();
+
+        innerDiv.appendChild(messageContent);
+        innerDiv.appendChild(timestampElement);
+        messageDiv.appendChild(innerDiv);
+
+        return messageDiv;
+    }
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageElement = createMessageElement(data.message, data.sender, data.timestamp);
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.key === 'Enter') {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        if (message.trim()) {
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'sender': username,
+                'timestamp': new Date().toISOString()
+            }));
+            messageInputDom.value = '';
+        }
+    };
+</script>
+{% endblock %}
