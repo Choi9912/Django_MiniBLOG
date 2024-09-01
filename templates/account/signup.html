@@ -16,22 +16,31 @@
   <div class="row justify-content-center">
     <div class="col-md-6 signup-container">
       <h1 class="signup-title">{% trans "회원가입" %}</h1>
+      <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">회원가입 주의사항</h4>
+        <ul>
+          <li>모든 필드를 정확히 입력해주세요.</li>
+          <li>비밀번호는 8자 이상이어야 하며, 문자와 숫자를 포함해야 합니다.</li>
+          <li>개인정보 보호를 위해 안전한 비밀번호를 사용해주세요.</li>
+          <li>이메일 주소는 인증에 사용되므로 정확히 입력해주세요.</li>
+        </ul>
+      </div>
       <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
         {% csrf_token %}
         <div class="form-group">
-          <label for="{{ form.username.id_for_label }}">사용자 :</label>
+          <label for="{{ form.username.id_for_label }}"></label>
           {{ form.username }}
         </div>
         <div class="form-group">
-          <label for="{{ form.email.id_for_label }}">이메일 :</label>
+          <label for="{{ form.email.id_for_label }}"> </label>
           {{ form.email }}
         </div>
         <div class="form-group">
-          <label for="{{ form.password1.id_for_label }}">비밀번호 :</label>
+          <label for="{{ form.password1.id_for_label }}"></label>
           {{ form.password1 }}
         </div>
         <div class="form-group">
-          <label for="{{ form.password2.id_for_label }}">비밀번호 확인:</label>
+          <label for="{{ form.password2.id_for_label }}"></label>
           {{ form.password2 }}
         </div>
         {% if redirect_field_value %}
