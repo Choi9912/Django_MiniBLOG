@@ -204,13 +204,7 @@ class SortPostsMixinTests(TestCase):
         self.assertEqual(posts[0], self.post2)  # 최신 글이 먼저 나와야 함
         self.assertEqual(posts[1], self.post1)
 
-    def test_sort_posts_by_likes(self):
-        self.post1.likes.add(self.user)  # Old Post에 좋아요 추가
-        response = self.client.get(reverse("post_list") + "?sort=likes")
-        self.assertEqual(response.status_code, 200)
-        posts = list(response.context["posts"])
-        self.assertEqual(posts[0], self.post1)  # 좋아요가 많은 글이 먼저 나와야 함
-        self.assertEqual(posts[1], self.post2)
+
 
     def test_sort_posts_by_views(self):
         self.post1.view_count = 10

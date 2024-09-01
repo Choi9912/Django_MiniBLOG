@@ -42,7 +42,7 @@
                             {% if is_following %}팔로우 취소{% else %}팔로우{% endif %}
                         </button>
                     {% endif %}
-                    <a href="{% url 'chat:start_conversation_with' username=profile.user.username %}" class="btn btn-success">
+                    <a href="{% url 'chat:start_conversation' username=profile.user.username %}" class="btn btn-success">
                         채팅하기
                     </a>
                 {% endif %}

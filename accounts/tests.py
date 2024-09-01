@@ -81,48 +81,72 @@ class ProfileViewsTest(TestCase):
 
 class FollowToggleViewTest(TestCase):
     def setUp(self):
-        self.user1 = User.objects.create_user(username="user1", password="12345")
-        self.user2 = User.objects.create_user(username="user2", password="12345")
-        Profile.objects.create(user=self.user1)
-        Profile.objects.create(user=self.user2)
-
-    def test_follow_toggle(self):
-        self.client.login(username="user1", password="12345")
-        url = reverse("accounts:follow_toggle", args=[self.user2.username])
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(
-            Follower.objects.filter(user=self.user2, follower=self.user1).exists()
-        )
-
-        response = self.client.post(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(
-            Follower.objects.filter(user=self.user2, follower=self.user1).exists()
-        )
+        # Setup initialization like user creation
+        self.user1 = User.objects.create_user(username='user1', password='12345')
+        self.user2 = User.objects.create_user(username='user2', password='12345')
 
     def test_follow_self(self):
         self.client.login(username="user1", password="12345")
         url = reverse("accounts:follow_toggle", args=[self.user1.username])
+
+        # First request: Self-follow
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 200)
+        print('First request (self-follow) response content:', response.content)  # Debugging output
+        self.assertEqual(response.status_code, 200,
+                         msg=f"Unexpected status code: {response.status_code}, content: {response.content.decode()}")
+
         data = response.json()
         self.assertIn("is_following", data)
         self.assertIn("follower_count", data)
 
-        # 첫 번째 요청: 자기 자신을 팔로우
         self.assertTrue(data["is_following"])
         self.assertEqual(data["follower_count"], 1)
         self.assertTrue(
             Follower.objects.filter(user=self.user1, follower=self.user1).exists()
         )
 
-        # 두 번째 요청: 자기 자신을 언팔로우
+        # Second request: Self-unfollow
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 200)
+        print('Second request (self-unfollow) response content:', response.content)  # Debugging output
+        self.assertEqual(response.status_code, 200,
+                         msg=f"Unexpected status code: {response.status_code}, content: {response.content.decode()}")
+
         data = response.json()
         self.assertFalse(data["is_following"])
         self.assertEqual(data["follower_count"], 0)
         self.assertFalse(
             Follower.objects.filter(user=self.user1, follower=self.user1).exists()
+        )
+
+    def test_follow_other_user(self):
+        self.client.login(username="user1", password="12345")
+        url = reverse("accounts:follow_toggle", args=[self.user2.username])
+
+        # First request: Follow user2
+        response = self.client.post(url)
+        print('First request (follow user2) response content:', response.content)  # Debugging output
+        self.assertEqual(response.status_code, 200,
+                         msg=f"Unexpected status code: {response.status_code}, content: {response.content.decode()}")
+
+        data = response.json()
+        self.assertIn("is_following", data)
+        self.assertIn("follower_count", data)
+
+        self.assertTrue(data["is_following"])
+        self.assertEqual(data["follower_count"], 1)
+        self.assertTrue(
+            Follower.objects.filter(user=self.user2, follower=self.user1).exists()
+        )
+
+        # Second request: Unfollow user2
+        response = self.client.post(url)
+        print('Second request (unfollow user2) response content:', response.content)  # Debugging output
+        self.assertEqual(response.status_code, 200,
+                         msg=f"Unexpected status code: {response.status_code}, content: {response.content.decode()}")
+
+        data = response.json()
+        self.assertFalse(data["is_following"])
+        self.assertEqual(data["follower_count"], 0)
+        self.assertFalse(
+            Follower.objects.filter(user=self.user2, follower=self.user1).exists()
         )
