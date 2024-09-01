@@ -3,29 +3,23 @@
 {% block content %}
 <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
     <h1 class="text-2xl font-bold mb-6 text-gray-800">Start a New Conversation</h1>
-    <form method="post" class="space-y-4">
+    <form method="post" action="{% url 'chat:start_conversation' %}">
         {% csrf_token %}
         {% for field in form %}
             <div class="space-y-2">
-                <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700">
-                    {{ field.label }}
-                </label>
+                {{ field.label_tag }}
                 {{ field }}
                 {% if field.help_text %}
-                    <p class="text-xs text-gray-500">{{ field.help_text }}</p>
+                    <p class="text-sm text-gray-600">{{ field.help_text }}</p>
                 {% endif %}
                 {% for error in field.errors %}
-                    <p class="text-xs text-red-500">{{ error }}</p>
+                    <p class="text-red-500 text-sm">{{ error }}</p>
                 {% endfor %}
             </div>
         {% endfor %}
-        <div class="flex items-center justify-between">
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition duration-300">
-                Start Conversation
-            </button>
-            <a href="{% url 'chat:conversation_list' %}" class="text-sm text-gray-600 hover:text-gray-800">
-                Back to Conversations
-            </a>
+        <div class="flex items-center justify-between mt-6">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Start Conversation</button>
+            <a href="{% url 'chat:conversation_list' %}" class="text-sm text-gray-600 hover:text-gray-800">Back to Conversations</a>
         </div>
     </form>
 </div>

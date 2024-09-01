@@ -11,10 +11,10 @@ WORKDIR /usr/src/app
 COPY requirements.txt .
 
 # 패키지 설치
-RUN pip install --no-cache-dir -r requirements.txt && pip install --no-cache-dir gunicorn
+RUN pip install --no-cache-dir -r requirements.txt && pip install --no-cache-dir daphne
 
 # 나머지 소스 코드 복사
 COPY . .
 
-# 서버 실행 명령어
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# 서버 실행 명령어 (Daphne 사용)
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "blog_project.asgi:application"]

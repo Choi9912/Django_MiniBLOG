@@ -1,11 +1,11 @@
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.views.generic import TemplateView, RedirectView, ListView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth import get_user_model
-from .service import get_or_create_conversation, get_user_conversations
+from .service import get_or_create_conversation, get_user_conversations, mark_messages_as_read
 from .models import Conversation
 
 User = get_user_model()
@@ -37,6 +37,9 @@ class RoomView(LoginRequiredMixin, TemplateView):
         room_name = self.kwargs['room_name']
         conversation = get_object_or_404(Conversation, id=room_name)
         other_participant = conversation.participants.exclude(id=self.request.user.id).first()
+
+        mark_messages_as_read(conversation, self.request.user)
+
         context['room_name'] = room_name
         context['conversation'] = conversation
         context['other_user'] = other_participant.username if other_participant else "Unknown"
@@ -44,19 +47,13 @@ class RoomView(LoginRequiredMixin, TemplateView):
         return context
 
 
-
-
 class StartConversationView(LoginRequiredMixin, RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         username = self.kwargs.get('username') or self.request.POST.get('username')
         if not username:
-            return reverse_lazy('chat:conversation_list')
+            return reverse('chat:conversation_list')
         conversation = get_or_create_conversation(self.request.user, username)
-        return reverse_lazy('chat:room', kwargs={'room_name': conversation.id})
-
-    def post(self, request, *args, **kwargs):
-        return self.get(request, *args, **kwargs)
-
+        return reverse('chat:room', kwargs={'room_name': conversation.id})
 
 class DeleteConversationView(LoginRequiredMixin, DeleteView):
     model = Conversation
@@ -70,7 +67,7 @@ class DeleteConversationView(LoginRequiredMixin, DeleteView):
         conversation.participants.remove(request.user)
         if conversation.participants.count() == 0:
             conversation.delete()
-        return super().delete(request, *args, **kwargs)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 
@@ -85,3 +82,4 @@ def get_chat_messages(request, room_id):
             "timestamp": message['timestamp'].isoformat()
         } for message in messages
     ], safe=False)
+

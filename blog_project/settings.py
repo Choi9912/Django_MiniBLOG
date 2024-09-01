@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
-from ckeditor_demo.settings import WSGI_APPLICATION
+
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -159,6 +159,17 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+"""
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
+"""
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
