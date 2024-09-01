@@ -46,6 +46,7 @@ class ProfileDetailView(DetailView):
                 "user_posts": ProfileService.get_user_posts(user),
                 "is_own_profile": is_own_profile,
                 "user_stats": user_stats,
+                "follower_count": user_stats['follower_count'],
                 "is_following": (
                     ProfileService.is_following(self.request.user, user)
                     if self.request.user.is_authenticated

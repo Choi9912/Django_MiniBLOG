@@ -15,7 +15,7 @@ class ProfileService:
             post_count=Count("id"),
             total_views=Sum("view_count"),
             total_likes=Sum("likes__id", distinct=True),
-            follower_count=Count("author__followers", distinct=True),
+            follower_count=Count("author__followers", distinct=True),  # 이 이름이 맞는지 확인
         )
         return {k: v or 0 for k, v in stats.items()}
 
